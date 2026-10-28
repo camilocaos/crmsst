@@ -50,3 +50,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# documentos de exemplo com dados reais de clientes (não versionar)
+/amostras/
