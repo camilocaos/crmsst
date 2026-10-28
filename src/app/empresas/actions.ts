@@ -1,0 +1,101 @@
+"use server";
+
+import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { db } from "@/db";
+import { contatos, empresas, notas } from "@/db/schema";
+import { checkbox, idOpcional, lerForm, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
+
+const empresaSchema = z.object({
+  razaoSocial: textoObrigatorio("Razão social"),
+  nomeFantasia: textoOpcional,
+  cnpj: textoOpcional.transform((v) => (v ? v.replace(/\D/g, "") : null)),
+  segmento: textoOpcional,
+  cnae: textoOpcional,
+  grauRisco: idOpcional.refine((v) => v === null || (v >= 1 && v <= 4), "deve ser de 1 a 4"),
+  numFuncionarios: idOpcional,
+  telefone: textoOpcional,
+  email: z.email("e-mail inválido").nullish().transform((v) => v ?? null),
+  endereco: textoOpcional,
+  cidade: textoOpcional,
+  uf: textoOpcional,
+  origem: textoOpcional,
+  status: z.enum(["lead", "cliente", "inativo"]).default("lead"),
+  observacoes: textoOpcional,
+});
+
+export async function criarEmpresa(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const r = lerForm(formData, empresaSchema);
+  if (!r.valido) return { erro: r.erro };
+  const [nova] = db.insert(empresas).values(r.dados).returning({ id: empresas.id }).all();
+  revalidatePath("/empresas");
+  redirect(`/empresas/${nova.id}`);
+}
+
+export async function atualizarEmpresa(id: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const r = lerForm(formData, empresaSchema);
+  if (!r.valido) return { erro: r.erro };
+  db.update(empresas).set(r.dados).where(eq(empresas.id, id)).run();
+  revalidatePath("/empresas");
+  redirect(`/empresas/${id}`);
+}
+
+export async function excluirEmpresa(id: number) {
+  db.delete(empresas).where(eq(empresas.id, id)).run();
+  revalidatePath("/", "layout");
+  redirect("/empresas");
+}
+
+const contatoSchema = z.object({
+  nome: textoObrigatorio("Nome"),
+  cargo: textoOpcional,
+  email: z.email("e-mail inválido").nullish().transform((v) => v ?? null),
+  telefone: textoOpcional,
+  principal: checkbox,
+});
+
+export async function criarContato(empresaId: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const r = lerForm(formData, contatoSchema);
+  if (!r.valido) return { erro: r.erro };
+  db.transaction((tx) => {
+    if (r.dados.principal) {
+      tx.update(contatos).set({ principal: false }).where(eq(contatos.empresaId, empresaId)).run();
+    }
+    tx.insert(contatos).values({ ...r.dados, empresaId }).run();
+  });
+  revalidatePath(`/empresas/${empresaId}`);
+  return { ok: true };
+}
+
+export async function excluirContato(empresaId: number, contatoId: number) {
+  db.delete(contatos)
+    .where(and(eq(contatos.id, contatoId), eq(contatos.empresaId, empresaId)))
+    .run();
+  revalidatePath(`/empresas/${empresaId}`);
+}
+
+export async function tornarPrincipal(empresaId: number, contatoId: number) {
+  db.transaction((tx) => {
+    tx.update(contatos).set({ principal: false }).where(eq(contatos.empresaId, empresaId)).run();
+    tx.update(contatos)
+      .set({ principal: true })
+      .where(and(eq(contatos.id, contatoId), eq(contatos.empresaId, empresaId)))
+      .run();
+  });
+  revalidatePath(`/empresas/${empresaId}`);
+}
+
+export async function criarNota(empresaId: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const r = lerForm(formData, z.object({ texto: textoObrigatorio("Texto") }));
+  if (!r.valido) return { erro: r.erro };
+  db.insert(notas).values({ empresaId, texto: r.dados.texto }).run();
+  revalidatePath(`/empresas/${empresaId}`);
+  return { ok: true };
+}
+
+export async function excluirNota(empresaId: number, notaId: number) {
+  db.delete(notas).where(and(eq(notas.id, notaId), eq(notas.empresaId, empresaId))).run();
+  revalidatePath(`/empresas/${empresaId}`);
+}
