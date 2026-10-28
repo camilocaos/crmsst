@@ -26,7 +26,7 @@ Para dar acesso a outra pessoa no mesmo computador: Configurações → Usuário
 O CRM roda como um programa de Windows (Electron), com instalador, atalho na Área de Trabalho e menu Iniciar.
 
 - **Dados:** ficam em `Documentos\CRM SST\crm.db`, com um backup automático por dia em `Documentos\CRM SST\backups` (guarda os últimos 30).
-- **Menu Arquivo:** "Abrir pasta de dados" e "Salvar backup como...".
+- **Configurações → Dados e backup:** "Abrir pasta de dados" e "Salvar backup agora...". A janela não tem barra de menu; atalhos: Ctrl +/− (zoom), Ctrl 0, F5 (recarregar), F11 (tela cheia).
 - Desinstalar ou atualizar o app **não apaga** os dados.
 
 ### Gerar o instalador
@@ -35,7 +35,26 @@ O CRM roda como um programa de Windows (Electron), com instalador, atalho na Ár
 npm run app:instalador
 ```
 
-Sai em `instalador/`: o `CRM-SST-Setup-<versão>.exe` e um `LEIA-ME.txt` com instruções para quem for instalar. É essa pasta que você passa pra equipe. Para lançar uma versão nova, aumente `version` em `desktop/package.json` antes de gerar.
+Sai em `instalador/`: o `CRM-SST-Setup-<versão>.exe`, um `LEIA-ME.txt` com instruções para quem for instalar, e o `latest.yml` + `.blockmap` que o atualizador automático usa.
+
+### Lançar uma versão nova (atualização automática)
+
+O app confere as Releases do GitHub ao abrir e a cada 2 horas. Quando acha uma versão nova, mostra uma janelinha no canto da tela com o que mudou, e os botões **Atualizar** e **Agora não**. A pessoa pode ignorar; o aviso volta na próxima vez que abrir o app. Ao atualizar, o app baixa em segundo plano, fecha, instala sem assistente e abre de novo.
+
+1. Aumente `version` em `desktop/package.json` (ex.: `1.2.0` → `1.3.0`).
+2. Escreva as novidades em `NOVIDADES.md` (é o texto de "Ver o que mudou").
+3. Faça commit das mudanças.
+4. Rode:
+
+```bash
+npm run app:instalador
+```
+
+```bash
+npm run app:publicar
+```
+
+Versões 1.1.0 ou anteriores não têm o atualizador: quem estiver nelas precisa instalar a 1.2.0 manualmente uma vez.
 
 O instalador não tem assinatura digital, então o Windows mostra o aviso "O Windows protegeu o computador". É só clicar em **Mais informações → Executar assim mesmo**.
 
@@ -82,6 +101,7 @@ Isso cria `data/crm-demo.db` com empresas, oportunidades, tarefas e uma proposta
 | `npm run dev:demo` | Roda o app usando o banco de demonstração |
 | `npm run app:dev` | Abre o app desktop em modo desenvolvimento |
 | `npm run app:instalador` | Gera o instalador do Windows em `instalador/` |
+| `npm run app:publicar` | Publica a versão como Release no GitHub (quem usa o app recebe o aviso de atualização) |
 | `npm run app:icone` | Regera os ícones (app, janela, favicon, logo) a partir de `marca/icone-original.png` |
 
 ## Estrutura

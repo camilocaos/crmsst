@@ -30,11 +30,13 @@ console.log("\n▶ 3/3 Gerando o instalador");
 fs.rmSync(path.join(raiz, "instalador"), { recursive: true, force: true });
 rodar("npx electron-builder --win nsis --x64 --publish never");
 
-// Deixa na pasta só o que vai para a equipe: o instalador e as instruções
+// Deixa na pasta só o que vai para a equipe (instalador + instruções)
+// e o que o atualizador automático precisa (latest.yml + .blockmap)
 const pasta = path.join(raiz, "instalador");
 const setup = fs.readdirSync(pasta).find((f) => f.endsWith(".exe"));
+const manter = new Set([setup, `${setup}.blockmap`, "latest.yml"]);
 for (const item of fs.readdirSync(pasta)) {
-  if (item !== setup) fs.rmSync(path.join(pasta, item), { recursive: true, force: true });
+  if (!manter.has(item)) fs.rmSync(path.join(pasta, item), { recursive: true, force: true });
 }
 const versao = JSON.parse(fs.readFileSync(path.join(raiz, "desktop", "package.json"), "utf8")).version;
 fs.writeFileSync(
@@ -56,16 +58,19 @@ Tudo fica em: Documentos\\CRM SST
   - backups\\ ...... uma cópia automática por dia (guarda os últimos 30)
   - logs\\ ......... registro técnico, útil se algo der errado
 
-No app: menu Arquivo > "Abrir pasta de dados" ou "Salvar backup como...".
+No app: Configurações (engrenagem no menu lateral) > "Dados e backup".
 
 Cada computador tem os próprios dados. Para levar seus dados para outro PC,
 feche o app e copie o arquivo crm.db para a pasta Documentos\\CRM SST do outro PC.
 
-Atualizar para uma versão nova
-------------------------------
-É só instalar a versão nova por cima. Os dados em Documentos\\CRM SST
-não são apagados, nem ao desinstalar.
-`.replace(/\n/g, "\r\n"),
+Atualizações
+------------
+Quando sair uma versão nova, o próprio app avisa com uma janelinha no canto
+da tela. Clique em "Atualizar" e depois em "Reiniciar e atualizar".
+Os dados em Documentos\\CRM SST não são apagados, nem ao desinstalar.
+
+(Quem tem a versão 1.1.0 ou anterior precisa instalar esta versão manualmente
+uma vez; a partir dela as atualizações chegam sozinhas.)`.replace(/\n/g, "\r\n"),
 );
 
-console.log(`\n✔ Pronto: instalador/${setup} + LEIA-ME.txt`);
+console.log(`\n✔ Pronto: instalador/${setup} + LEIA-ME.txt (+ latest.yml e .blockmap para o atualizador)`);
