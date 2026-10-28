@@ -1,2 +1,2 @@
-- **CNPJ preenche o cadastro sozinho:** em Nova empresa, digite o CNPJ e o CRM busca na Receita a razão social, nome fantasia, CNAE, telefone, e-mail, endereço, cidade e UF. Também avisa se a empresa não estiver ativa.
-- **Sem login padrão:** no primeiro acesso de cada computador, a pessoa cria o próprio usuário e senha de administrador. Se o seu computador ainda tinha o acesso padrão nunca trocado, ele foi removido e o app vai pedir para você criar o seu.
+- **Tabela de valores da clínica no catálogo:** os 28 exames da CUIDI Saúde Ocupacional (clínicos, imagem, laboratoriais e serviços complementares) e os combos NR-35, NR-10 e manipulação de alimentos já aparecem em Serviços e na montagem de propostas, sempre cobrados por exame realizado.
+- Os itens genéricos antigos de exame foram desativados. Preços que você já tinha editado não foram alterados.
