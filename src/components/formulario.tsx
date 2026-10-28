@@ -61,7 +61,7 @@ export function BotaoEnviar({ children, className = "" }: { children: ReactNode;
     <button
       type="submit"
       disabled={pending}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg bg-marca-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-marca-700 disabled:opacity-60 ${className}`}
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-marca-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-marca-700 disabled:opacity-60 ${className}`}
     >
       {pending ? "Salvando..." : children}
     </button>
@@ -89,7 +89,7 @@ export function BotaoConfirmar({
     >
       <button
         type="submit"
-        className={`inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 ${className}`}
+        className={`inline-flex min-h-10 items-center gap-2 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-erro transition hover:bg-rose-50 ${className}`}
       >
         {children}
       </button>

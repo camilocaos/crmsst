@@ -1,27 +1,57 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-marca-50: #ecfdf5;
-  --color-marca-100: #d1fae5;
-  --color-marca-500: #10b981;
-  --color-marca-600: #059669;
-  --color-marca-700: #047857;
-  --color-marca-900: #064e3b;
+/*
+ * Identidade visual "CRM Comercial" (ver marca/identidade-visual.md).
+ * As escalas `marca` e `slate` são redefinidas com a paleta, então todas as
+ * telas seguem o tema sem precisar trocar classe por classe.
+ */
+@theme {
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+
+  /* Principal (#007FAE) e navegação (#10334A) */
+  --color-marca-50: #e6f2f7;
+  --color-marca-100: #cce5ef;
+  --color-marca-500: #007fae;
+  --color-marca-600: #007fae;
+  --color-marca-700: #006c94;
+  --color-marca-900: #10334a;
+  --color-acento: #37c7e8; /* só detalhes pequenos, nunca texto em fundo branco */
+
+  /* Neutros azulados: fundo #F4F8FB, borda #DCE6ED, texto #243746, secundário #526779 */
+  --color-slate-50: #f4f8fb;
+  --color-slate-100: #eaf1f6;
+  --color-slate-200: #dce6ed;
+  --color-slate-300: #c5d3de;
+  --color-slate-400: #8ca0b0;
+  --color-slate-500: #526779;
+  --color-slate-600: #46596a;
+  --color-slate-700: #364a5a;
+  --color-slate-800: #2b3e4d;
+  --color-slate-900: #243746;
+
+  /* Estados */
+  --color-sucesso: #18794e;
+  --color-atencao: #8a5700;
+  --color-erro: #b42318;
 }
 
 body {
-  background: #f4f6f8;
-  color: #0f172a;
+  background: #f4f8fb;
+  color: #243746;
+  font-size: 14px;
+}
+
+:focus-visible {
+  outline: 3px solid #007fae;
+  outline-offset: 3px;
 }
 
 @layer components {
   .campo {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-marca-500 focus:ring-2 focus:ring-marca-100;
+    @apply min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-marca-600 focus:ring-2 focus:ring-marca-100 focus-visible:outline-none;
   }
   .rotulo {
-    @apply mb-1 block text-xs font-medium text-slate-600;
+    @apply mb-1 block text-xs font-semibold text-slate-600;
   }
 }
 

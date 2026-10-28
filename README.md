@@ -82,7 +82,7 @@ Isso cria `data/crm-demo.db` com empresas, oportunidades, tarefas e uma proposta
 | `npm run dev:demo` | Roda o app usando o banco de demonstração |
 | `npm run app:dev` | Abre o app desktop em modo desenvolvimento |
 | `npm run app:instalador` | Gera o instalador do Windows em `instalador/` |
-| `npm run app:icone` | Regera o ícone do app (`build/icon.png`) |
+| `npm run app:icone` | Regera os ícones (app, janela, favicon, logo) a partir de `marca/icone-original.png` |
 
 ## Estrutura
 
@@ -94,7 +94,8 @@ src/
   lib/            constantes, formatação, configurações e helpers
 drizzle/          migrations do banco
 desktop/          processo principal do app Windows (Electron)
-build/            ícone do app
+build/            ícone do app (gerado)
+marca/            identidade visual: ícone original, paleta e especificação
 scripts/          dados de demonstração, empacotamento e utilitários
 ```
 
