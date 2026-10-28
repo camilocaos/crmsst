@@ -1,6 +1,6 @@
 // Processo principal do app desktop (Electron).
 // Sobe o servidor Next.js interno numa porta livre e abre a janela do CRM.
-const { app, BrowserWindow, Menu, dialog, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell, utilityProcess } = require("electron");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const http = require("node:http");
@@ -20,6 +20,97 @@ let janela = null;
 let servidor = null;
 let urlServidor = null;
 
+// ---------- Atualização automática (GitHub Releases) ----------
+const VERIFICAR_A_CADA_MS = 2 * 60 * 60 * 1000; // a cada 2 horas, além de ao abrir
+/** Estado que a janelinha de atualização mostra. Fica aqui para sobreviver a recarregamentos da página. */
+let atualizacao = { etapa: "nenhuma" }; // nenhuma | disponivel | baixando | pronta | erro
+let dispensada = false; // "Agora não": some até o app ser aberto de novo
+
+function enviarAtualizacao() {
+  janela?.webContents.send("crm:atualizacao", dispensada ? { etapa: "nenhuma" } : atualizacao);
+}
+
+function textoDasNotas(notas) {
+  const texto = Array.isArray(notas) ? notas.map((n) => n.note ?? "").join("\n") : String(notas ?? "");
+  return texto
+    .replace(/<\/(p|li|h\d)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function configurarAtualizador() {
+  // Em desenvolvimento não há o que atualizar (a não ser num teste com CRM_UPDATE_URL)
+  if (!app.isPackaged && !process.env.CRM_UPDATE_URL) return;
+  const { autoUpdater } = require("electron-updater");
+  autoUpdater.autoDownload = false; // só baixa se a pessoa quiser
+  // Só instala quando a pessoa clica. Se baixou e fechou, o aviso volta pronto na próxima abertura.
+  autoUpdater.autoInstallOnAppQuit = false;
+  const modoTeste = Boolean(process.env.CRM_UPDATE_URL);
+  if (modoTeste) autoUpdater.setFeedURL({ provider: "generic", url: process.env.CRM_UPDATE_URL });
+
+  autoUpdater.on("update-available", (info) => {
+    if (atualizacao.etapa === "baixando" || atualizacao.etapa === "pronta") return;
+    atualizacao = { etapa: "disponivel", versao: info.version, notas: textoDasNotas(info.releaseNotes) };
+    enviarAtualizacao();
+  });
+  autoUpdater.on("download-progress", (p) => {
+    atualizacao = { ...atualizacao, etapa: "baixando", progresso: Math.round(p.percent) };
+    enviarAtualizacao();
+  });
+  autoUpdater.on("update-downloaded", (info) => {
+    atualizacao = { ...atualizacao, etapa: "pronta", versao: info.version, progresso: 100 };
+    dispensada = false;
+    enviarAtualizacao();
+  });
+  autoUpdater.on("error", (erro) => {
+    console.error("Atualização:", erro?.message);
+    // Sem internet etc.: só mostra erro se a pessoa tinha pedido para baixar
+    if (atualizacao.etapa === "baixando") {
+      atualizacao = { ...atualizacao, etapa: "erro", mensagem: "Não foi possível baixar a atualização. Tente de novo mais tarde." };
+      enviarAtualizacao();
+    }
+  });
+
+  ipcMain.handle("crm:atualizacao-estado", (evento) => (daJanela(evento) ? (dispensada ? { etapa: "nenhuma" } : atualizacao) : null));
+  ipcMain.handle("crm:atualizacao-baixar", (evento) => {
+    if (!daJanela(evento) || (atualizacao.etapa !== "disponivel" && atualizacao.etapa !== "erro")) return;
+    atualizacao = { ...atualizacao, etapa: "baixando", progresso: 0 };
+    enviarAtualizacao();
+    autoUpdater.downloadUpdate().catch(() => {});
+  });
+  ipcMain.handle("crm:atualizacao-dispensar", (evento) => {
+    if (!daJanela(evento)) return;
+    dispensada = true;
+    enviarAtualizacao();
+  });
+  ipcMain.handle("crm:atualizacao-instalar", (evento) => {
+    if (!daJanela(evento) || atualizacao.etapa !== "pronta") return;
+    if (modoTeste) {
+      // em teste nunca instala de verdade no computador
+      atualizacao = { ...atualizacao, etapa: "erro", mensagem: "Modo de teste: a instalação foi simulada." };
+      enviarAtualizacao();
+      return;
+    }
+    // Fecha tudo antes, para o instalador não encontrar o app aberto
+    app.isQuitting = true;
+    servidor?.kill();
+    for (const w of BrowserWindow.getAllWindows()) w.destroy();
+    // silencioso (sem assistente) e abre o app de novo ao terminar
+    setImmediate(() => autoUpdater.quitAndInstall(true, true));
+  });
+
+  const verificar = () => autoUpdater.checkForUpdates().catch(() => {});
+  setTimeout(verificar, 5000);
+  setInterval(verificar, VERIFICAR_A_CADA_MS);
+}
+
+/** Só a página do próprio CRM pode chamar a ponte (nunca um site externo). */
+function daJanela(evento) {
+  return Boolean(urlServidor && evento.senderFrame?.url.startsWith(urlServidor));
+}
+
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -34,13 +125,15 @@ if (!app.requestSingleInstanceLock()) {
 
 async function iniciar() {
   fs.mkdirSync(PASTA_BACKUPS, { recursive: true });
-  criarMenu();
+  Menu.setApplicationMenu(null); // sem barra "Arquivo | Editar | Exibir | Ajuda"
+  registrarPonte();
   const splash = mostrarSplash();
 
   try {
     const url = DEV_URL || (await subirServidor());
     urlServidor = url;
     await esperarServidor(url);
+    configurarAtualizador(); // antes da janela, para a página já achar os handlers
     abrirJanela(url);
     backupDiario().catch((erro) => console.error("Backup diário falhou:", erro));
   } catch (erro) {
@@ -132,12 +225,14 @@ function abrirJanela(url) {
     height: 900,
     minWidth: 960,
     minHeight: 600,
-    title: "CRM SST",
+    title: "CRM Comercial",
     icon: ICONE,
     backgroundColor: "#F4F8FB",
     show: false,
-    webPreferences: { contextIsolation: true, sandbox: true },
+    autoHideMenuBar: true,
+    webPreferences: { contextIsolation: true, sandbox: true, preload: path.join(__dirname, "preload.cjs") },
   });
+  registrarAtalhos(janela.webContents);
   janela.maximize();
   janela.once("ready-to-show", () => janela.show());
   janela.loadURL(url);
@@ -184,74 +279,64 @@ async function backupDiario() {
   for (const f of antigos) fs.rmSync(path.join(PASTA_BACKUPS, f), { force: true });
 }
 
-async function salvarBackupComo() {
-  const { canceled, filePath } = await dialog.showSaveDialog(janela, {
-    title: "Salvar backup do CRM",
-    defaultPath: path.join(app.getPath("documents"), `backup-crm-${dataHoje()}.db`),
-    filters: [{ name: "Banco do CRM", extensions: ["db"] }],
+/** Funções que a tela de Configurações chama pelo preload (sem barra de menu). */
+function registrarPonte() {
+  ipcMain.handle("crm:info", (evento) => {
+    if (!daJanela(evento)) return null;
+    return { versao: app.getVersion(), pastaDados: PASTA_DADOS };
   });
-  if (canceled || !filePath) return;
-  if (await gerarBackup(filePath)) {
-    dialog.showMessageBox(janela, { type: "info", message: "Backup salvo com sucesso.", detail: filePath });
-  } else {
-    dialog.showErrorBox("Erro no backup", "Não foi possível salvar o backup.");
-  }
+
+  ipcMain.handle("crm:abrir-pasta", async (evento) => {
+    if (!daJanela(evento)) return false;
+    return (await shell.openPath(PASTA_DADOS)) === "";
+  });
+
+  ipcMain.handle("crm:salvar-backup", async (evento) => {
+    if (!daJanela(evento)) return { ok: false };
+    const { canceled, filePath } = await dialog.showSaveDialog(janela, {
+      title: "Salvar backup do CRM",
+      defaultPath: path.join(app.getPath("documents"), `backup-crm-${dataHoje()}.db`),
+      filters: [{ name: "Banco do CRM", extensions: ["db"] }],
+    });
+    if (canceled || !filePath) return { ok: false, cancelado: true };
+    const destino = filePath.toLowerCase().endsWith(".db") ? filePath : `${filePath}.db`;
+    return { ok: await gerarBackup(destino), caminho: destino };
+  });
 }
 
-function criarMenu() {
-  const menu = Menu.buildFromTemplate([
-    {
-      label: "Arquivo",
-      submenu: [
-        { label: "Abrir pasta de dados", click: () => shell.openPath(PASTA_DADOS) },
-        { label: "Salvar backup como...", click: salvarBackupComo },
+/** Atalhos que antes vinham do menu: zoom, recarregar, tela cheia (e DevTools no modo dev). */
+function registrarAtalhos(webContents) {
+  webContents.on("before-input-event", (evento, entrada) => {
+    if (entrada.type !== "keyDown") return;
+    const ctrl = entrada.control || entrada.meta;
+    const tecla = entrada.key;
+    let tratado = true;
+    if (ctrl && (tecla === "=" || tecla === "+")) webContents.setZoomLevel(webContents.getZoomLevel() + 0.5);
+    else if (ctrl && tecla === "-") webContents.setZoomLevel(webContents.getZoomLevel() - 0.5);
+    else if (ctrl && tecla === "0") webContents.setZoomLevel(0);
+    else if (tecla === "F5" || (ctrl && tecla.toLowerCase() === "r")) webContents.reload();
+    else if (tecla === "F11") janela?.setFullScreen(!janela.isFullScreen());
+    else if (tecla === "F12" && (DEV_URL || !app.isPackaged)) webContents.toggleDevTools();
+    else tratado = false;
+    if (tratado) evento.preventDefault();
+  });
+
+  // Botão direito: recortar / copiar / colar em campos e textos selecionados
+  webContents.on("context-menu", (_evento, p) => {
+    const itens = [];
+    if (p.isEditable) {
+      itens.push(
+        { label: "Recortar", role: "cut", enabled: p.editFlags.canCut },
+        { label: "Copiar", role: "copy", enabled: p.editFlags.canCopy },
+        { label: "Colar", role: "paste", enabled: p.editFlags.canPaste },
         { type: "separator" },
-        { label: "Sair", role: "quit" },
-      ],
-    },
-    {
-      label: "Editar",
-      submenu: [
-        { label: "Desfazer", role: "undo" },
-        { label: "Refazer", role: "redo" },
-        { type: "separator" },
-        { label: "Recortar", role: "cut" },
-        { label: "Copiar", role: "copy" },
-        { label: "Colar", role: "paste" },
         { label: "Selecionar tudo", role: "selectAll" },
-      ],
-    },
-    {
-      label: "Exibir",
-      submenu: [
-        { label: "Recarregar", role: "reload" },
-        { type: "separator" },
-        { label: "Aumentar zoom", role: "zoomIn" },
-        { label: "Diminuir zoom", role: "zoomOut" },
-        { label: "Zoom normal", role: "resetZoom" },
-        { type: "separator" },
-        { label: "Tela cheia", role: "togglefullscreen" },
-        ...(DEV_URL || !app.isPackaged ? [{ label: "Ferramentas do desenvolvedor", role: "toggleDevTools" }] : []),
-      ],
-    },
-    {
-      label: "Ajuda",
-      submenu: [
-        {
-          label: "Sobre o CRM SST",
-          click: () =>
-            dialog.showMessageBox(janela, {
-              type: "info",
-              title: "CRM SST",
-              message: `CRM SST ${app.getVersion()}`,
-              detail: `by camilocaos\n\nDados em: ${PASTA_DADOS}`,
-            }),
-        },
-        { label: "Código no GitHub", click: () => shell.openExternal("https://github.com/camilocaos/crmsst") },
-      ],
-    },
-  ]);
-  Menu.setApplicationMenu(menu);
+      );
+    } else if (p.selectionText.trim()) {
+      itens.push({ label: "Copiar", role: "copy" });
+    }
+    if (itens.length) Menu.buildFromTemplate(itens).popup({ window: janela });
+  });
 }
 
 app.on("before-quit", () => {

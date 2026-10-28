@@ -1,8 +1,11 @@
 {
   "name": "crm-sst",
   "productName": "CRM SST",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "CRM comercial para empresas de Saúde e Segurança do Trabalho",
   "author": "camilocaos",
-  "main": "main.cjs"
+  "main": "main.cjs",
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  }
 }

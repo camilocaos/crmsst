@@ -13,6 +13,7 @@
     "dev:demo": "node scripts/dev-demo.mjs",
     "app:dev": "node scripts/app-dev.mjs",
     "app:instalador": "node scripts/empacotar.mjs",
+    "app:publicar": "node scripts/publicar.mjs",
     "app:icone": "electron scripts/gerar-icone.cjs"
   },
   "build": {
@@ -25,7 +26,8 @@
       "buildResources": "build"
     },
     "asar": true,
-    "files": ["main.cjs", "icone.png", "package.json", "!**/node_modules/**"],
+    "files": ["main.cjs", "preload.cjs", "icone.png", "package.json"],
+    "publish": [{ "provider": "github", "owner": "camilocaos", "repo": "crmsst", "releaseType": "release" }],
     "extraResources": [
       {
         "from": ".next/standalone",
