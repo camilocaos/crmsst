@@ -1,7 +1,7 @@
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { count } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import * as schema from "./schema";
-import { gerarHashSenha } from "../lib/senha";
+import { conferirSenha } from "../lib/senha";
 
 type Db = BetterSQLite3Database<typeof schema>;
 
@@ -38,11 +38,21 @@ export function seedSeVazio(db: Db) {
   }
   db.insert(schema.configuracoes).values(CONFIG_PADRAO).onConflictDoNothing().run();
 
-  // Primeiro acesso: usuário padrão, com troca de senha obrigatória no login
-  const [{ usuarios }] = db.select({ usuarios: count() }).from(schema.usuarios).all();
-  if (usuarios === 0) {
-    db.insert(schema.usuarios)
-      .values({ usuario: "camilocaos", nome: "Camilo", senhaHash: gerarHashSenha("admin"), trocarSenha: true })
-      .run();
+  removerAcessoPadraoAntigo(db);
+}
+
+/**
+ * Versões até a 1.2.0 criavam "camilocaos" com a senha "admin" (pública no código).
+ * Se esse acesso nunca teve a senha trocada, ele é apagado: o app então mostra a tela
+ * de primeiro acesso, onde a pessoa cria o próprio administrador.
+ */
+function removerAcessoPadraoAntigo(db: Db) {
+  const padrao = db
+    .select()
+    .from(schema.usuarios)
+    .where(and(eq(schema.usuarios.usuario, "camilocaos"), eq(schema.usuarios.trocarSenha, true)))
+    .get();
+  if (padrao && conferirSenha("admin", padrao.senhaHash)) {
+    db.delete(schema.usuarios).where(eq(schema.usuarios.id, padrao.id)).run();
   }
 }

@@ -15,7 +15,7 @@ export default async function TrocarSenhaPage() {
   return (
     <TelaAcesso
       titulo="Crie sua senha"
-      subtitulo={`Olá, ${usuario.nome}! Você está usando a senha padrão. Troque por uma senha só sua antes de continuar.`}
+      subtitulo={`Olá, ${usuario.nome}! Você entrou com uma senha provisória. Troque por uma senha só sua antes de continuar.`}
     >
       <Formulario
         acao={trocarSenhaPrimeiroAcesso}

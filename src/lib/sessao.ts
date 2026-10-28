@@ -56,6 +56,11 @@ export async function exigirUsuario({ permitirTrocaPendente = false } = {}) {
   return usuario;
 }
 
+/** Ainda não existe nenhum usuário neste computador (primeiro acesso). */
+export function semUsuarios() {
+  return !db.select({ id: usuarios.id }).from(usuarios).limit(1).get();
+}
+
 /** Derruba as outras sessões do usuário (depois de trocar a senha, por exemplo). */
 export async function encerrarOutrasSessoes(usuarioId: number) {
   const token = (await cookies()).get(COOKIE_SESSAO)?.value;

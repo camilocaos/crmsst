@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Campo } from "@/components/ui";
 import { Formulario } from "@/components/formulario";
 import { TelaAcesso } from "@/components/tela-acesso";
-import { usuarioAtual } from "@/lib/sessao";
+import { semUsuarios, usuarioAtual } from "@/lib/sessao";
 import { entrar } from "./actions";
 
 export const metadata: Metadata = { title: "Entrar" };
 
 export default async function LoginPage() {
+  await connection(); // lê o banco na hora do acesso, nunca no build
+  if (semUsuarios()) redirect("/primeiro-acesso");
   if (await usuarioAtual()) redirect("/");
   return (
     <TelaAcesso titulo="Entrar" subtitulo="Use seu usuário e senha para acessar o CRM.">

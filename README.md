@@ -17,9 +17,11 @@ Feito com **Next.js 16**, **React 19**, **Tailwind CSS 4** e **SQLite** (better-
 
 ## Primeiro acesso
 
-Na primeira vez que o app abre, ele cria o usuário **`camilocaos`** com a senha **`admin`**. Ao entrar, o app **obriga a trocar a senha** antes de liberar o CRM (essa senha padrão está escrita aqui no código, que é público).
+Não existe login padrão. Na primeira vez que o app abre num computador, aparece a tela **"Bem-vindo ao CRM"**, onde a pessoa cria o próprio usuário de administrador e a senha. Essa tela só existe enquanto não há nenhum usuário.
 
 Para dar acesso a outra pessoa no mesmo computador: Configurações → Usuários → Novo usuário, com uma senha provisória. Ela troca a senha no primeiro login.
+
+(Versões até a 1.2.0 criavam `camilocaos`/`admin`. Se esse acesso nunca teve a senha trocada, a versão nova apaga ele e mostra a tela de primeiro acesso.)
 
 ## App para Windows
 

@@ -6,15 +6,11 @@ import { z } from "zod";
 import { db } from "@/db";
 import { usuarios } from "@/db/schema";
 import { salvarConfig } from "@/lib/config";
-import { lerForm, numeroOpcional, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
+import { lerForm, nomeUsuarioSchema, numeroOpcional, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 import { gerarHashSenha } from "@/lib/senha";
 import { exigirUsuario } from "@/lib/sessao";
 
-const nomeUsuario = z
-  .string({ error: "Usuário é obrigatório" })
-  .trim()
-  .toLowerCase()
-  .regex(/^[a-z0-9._-]{3,30}$/, "use de 3 a 30 letras minúsculas, números, ponto, hífen ou _");
+const nomeUsuario = nomeUsuarioSchema;
 
 export async function salvarEmpresa(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
   await exigirUsuario();

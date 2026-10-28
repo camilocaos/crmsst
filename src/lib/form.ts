@@ -39,6 +39,12 @@ export const numeroOpcional = z
     return n;
   });
 export const idOpcional = numeroOpcional.transform((v) => (v ? Math.trunc(v) : null));
+export const nomeUsuarioSchema = z
+  .string({ error: "Usuário é obrigatório" })
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9._-]{3,30}$/, "use de 3 a 30 letras minúsculas, números, ponto, hífen ou _");
+
 export const checkbox = z
   .string()
   .nullish()

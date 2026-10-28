@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Checagem rápida: sem cookie de sessão, vai para o login.
 // A validação de verdade (no banco) acontece em exigirUsuario(), nas páginas e ações.
-const PUBLICAS = ["/login"];
+const PUBLICAS = ["/login", "/primeiro-acesso"];
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

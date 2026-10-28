@@ -1,11 +1,11 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { usuarios } from "@/db/schema";
-import { lerForm, textoObrigatorio, type EstadoForm } from "@/lib/form";
+import { lerForm, nomeUsuarioSchema, textoObrigatorio, type EstadoForm } from "@/lib/form";
 import { conferirSenha, gerarHashSenha } from "@/lib/senha";
 import { criarSessao, encerrarOutrasSessoes, encerrarSessao, exigirUsuario } from "@/lib/sessao";
 
@@ -20,6 +20,37 @@ export async function entrar(_: EstadoForm, formData: FormData): Promise<EstadoF
   }
   await criarSessao(u.id);
   redirect(u.trocarSenha ? "/trocar-senha" : "/");
+}
+
+/**
+ * Primeiro acesso do computador: cria o administrador escolhido pela pessoa.
+ * Só funciona enquanto não existe nenhum usuário (depois disso, usuários são criados em Configurações).
+ */
+export async function criarPrimeiroAdmin(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  const r = lerForm(
+    formData,
+    z.object({
+      nome: textoObrigatorio("Nome"),
+      usuario: nomeUsuarioSchema,
+      senha: z.string({ error: "Crie uma senha" }).min(6, "A senha precisa ter pelo menos 6 caracteres"),
+      confirmacao: z.string().nullish(),
+    }),
+  );
+  if (!r.valido) return { erro: r.erro.replace(/^\w+: /, "") };
+  if (r.dados.senha !== r.dados.confirmacao) return { erro: "A confirmação não bate com a senha." };
+
+  const novoId = db.transaction((tx) => {
+    const [{ total }] = tx.select({ total: count() }).from(usuarios).all();
+    if (total > 0) return null;
+    return tx
+      .insert(usuarios)
+      .values({ nome: r.dados.nome, usuario: r.dados.usuario, senhaHash: gerarHashSenha(r.dados.senha), trocarSenha: false })
+      .returning({ id: usuarios.id })
+      .get().id;
+  });
+  if (!novoId) redirect("/login"); // alguém já criou o primeiro acesso
+  await criarSessao(novoId);
+  redirect("/");
 }
 
 export async function sair() {
