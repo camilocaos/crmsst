@@ -30,16 +30,33 @@ export default async function EmpresasPage({ searchParams }: PageProps<"/empresa
   }
   if (filtroStatus) condicoes.push(eq(empresas.status, filtroStatus as "lead"));
 
-  const lista = db
-    .select({
-      empresa: empresas,
-      contato: sql<string | null>`(select ${contatos.nome} from ${contatos} where ${contatos.empresaId} = ${empresas.id} order by ${contatos.principal} desc, ${contatos.id} limit 1)`,
-      emAberto: sql<number>`coalesce((select sum(${oportunidades.valor}) from ${oportunidades} where ${oportunidades.empresaId} = ${empresas.id} and ${inArray(oportunidades.etapa, ETAPAS_ABERTAS)}), 0)`,
-    })
+  const empresasFiltradas = db
+    .select()
     .from(empresas)
     .where(condicoes.length ? and(...condicoes) : undefined)
     .orderBy(desc(empresas.id))
     .all();
+
+  // Valor em aberto e contato principal de cada empresa
+  const emAbertoPorEmpresa = new Map(
+    db
+      .select({ empresaId: oportunidades.empresaId, total: sql<number>`sum(${oportunidades.valor})` })
+      .from(oportunidades)
+      .where(inArray(oportunidades.etapa, ETAPAS_ABERTAS))
+      .groupBy(oportunidades.empresaId)
+      .all()
+      .map((r) => [r.empresaId, r.total]),
+  );
+  const contatoPorEmpresa = new Map<number, string>();
+  for (const c of db.select().from(contatos).orderBy(desc(contatos.principal), contatos.id).all()) {
+    if (!contatoPorEmpresa.has(c.empresaId)) contatoPorEmpresa.set(c.empresaId, c.nome);
+  }
+
+  const lista = empresasFiltradas.map((empresa) => ({
+    empresa,
+    contato: contatoPorEmpresa.get(empresa.id) ?? null,
+    emAberto: emAbertoPorEmpresa.get(empresa.id) ?? 0,
+  }));
 
   return (
     <>

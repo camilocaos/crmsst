@@ -16,21 +16,34 @@ export default async function PropostasPage({ searchParams }: PageProps<"/propos
   const { status } = await searchParams;
   const filtro = typeof status === "string" && status in STATUS_PROPOSTA ? (status as keyof typeof STATUS_PROPOSTA) : null;
 
+  const subtotais = new Map(
+    db
+      .select({
+        propostaId: propostaItens.propostaId,
+        subtotal: sql<number>`sum(${propostaItens.quantidade} * ${propostaItens.valorUnitario})`,
+      })
+      .from(propostaItens)
+      .groupBy(propostaItens.propostaId)
+      .all()
+      .map((r) => [r.propostaId, r.subtotal]),
+  );
+
   const lista = db
     .select({
       id: propostas.id,
       status: propostas.status,
       validade: propostas.validade,
       criadoEm: propostas.criadoEm,
+      desconto: propostas.desconto,
       empresaId: propostas.empresaId,
       empresa: sql<string>`coalesce(${empresas.nomeFantasia}, ${empresas.razaoSocial})`,
-      total: sql<number>`coalesce((select sum(${propostaItens.quantidade} * ${propostaItens.valorUnitario}) from ${propostaItens} where ${propostaItens.propostaId} = ${propostas.id}), 0) * (1 - ${propostas.desconto} / 100.0)`,
     })
     .from(propostas)
     .innerJoin(empresas, eq(empresas.id, propostas.empresaId))
     .where(filtro ? eq(propostas.status, filtro) : undefined)
     .orderBy(desc(propostas.id))
-    .all();
+    .all()
+    .map((p) => ({ ...p, total: (subtotais.get(p.id) ?? 0) * (1 - p.desconto / 100) }));
 
   const dataHoje = hoje();
 
