@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRM Comercial SST
 
-## Getting Started
+CRM para empresas de **Saúde e Segurança do Trabalho**: cadastro de clientes, funil de vendas em Kanban, follow-ups, propostas comerciais e dashboard de metas.
 
-First, run the development server:
+Feito com **Next.js 16**, **React 19**, **Tailwind CSS 4** e **SQLite** (better-sqlite3 + Drizzle ORM). Tudo roda localmente, sem serviço externo.
+
+## Funcionalidades
+
+- **Empresas e contatos** — razão social, CNPJ, CNAE, grau de risco (NR-04), nº de funcionários, status (lead/cliente/inativo), vários contatos com link direto pro WhatsApp e histórico de interações.
+- **Funil de vendas (Kanban)** — arraste oportunidades entre as etapas (Prospecção → Qualificação → Visita técnica → Proposta → Negociação → Ganho/Perdido). Mostra total por etapa e valor ponderado pela probabilidade. Ao ganhar, a empresa vira cliente automaticamente.
+- **Tarefas e follow-ups** — ligações, WhatsApp, visitas, com vencimento e prioridade, agrupadas em atrasadas / hoje / próximos dias. Botão de adiar 1 dia.
+- **Catálogo de serviços SST** — PGR, PCMSO, LTCAT, AET, ASO, eSocial, treinamentos de NRs e mais, com preço base e unidade (por empresa, por funcionário, por turma...).
+- **Propostas** — monte com itens do catálogo, ajuste quantidades e desconto, imprima ou salve em PDF, envie pelo WhatsApp. Marcar como *enviada* ou *aceita* atualiza a oportunidade no funil.
+- **Dashboard** — vendido no mês x meta, funil em aberto, conversão, vendas dos últimos 6 meses, tarefas do dia e propostas aguardando resposta.
+
+## Como rodar
+
+Requisitos: Node.js 20.9 ou mais recente.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000. O banco é criado sozinho em `data/crm.db` na primeira execução (com o catálogo de serviços já preenchido).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Modo demonstração
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Para ver o CRM com dados fictícios, sem mexer no seu banco:
 
-## Learn More
+```bash
+npm run demo
+npm run dev:demo
+```
 
-To learn more about Next.js, take a look at the following resources:
+Isso cria `data/crm-demo.db` com empresas, oportunidades, tarefas e uma proposta de exemplo.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Comando | O que faz |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` / `npm start` | Build e servidor de produção |
+| `npm run typecheck` | Checagem de tipos |
+| `npm run lint` | ESLint |
+| `npm run db:generate` | Gera migration depois de mudar `src/db/schema.ts` |
+| `npm run demo` | Cria o banco de demonstração |
+| `npm run dev:demo` | Roda o app usando o banco de demonstração |
 
-## Deploy on Vercel
+## Estrutura
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/            páginas (empresas, funil, tarefas, propostas, servicos, configuracoes)
+  components/     componentes de interface e formulários
+  db/             schema do banco, conexão e dados iniciais
+  lib/            constantes, formatação, configurações e helpers
+drizzle/          migrations do banco
+scripts/          dados de demonstração
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Os arquivos do banco (`data/*.db`) ficam fora do Git, então seus dados de clientes nunca vão pro GitHub.
+
+---
+
+by [camilocaos](https://github.com/camilocaos)
