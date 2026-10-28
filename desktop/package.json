@@ -1,7 +1,7 @@
 {
   "name": "crm-sst",
   "productName": "CRM SST",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "CRM comercial para empresas de Saúde e Segurança do Trabalho",
   "author": "camilocaos",
   "main": "main.cjs",

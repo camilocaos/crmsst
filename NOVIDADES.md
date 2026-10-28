@@ -1,6 +1,2 @@
-- **Atualização automática:** quando sair uma versão nova, aparece um aviso no canto da tela. É só clicar em "Atualizar".
-- **Sem barra de menu:** a janela ficou mais limpa. Pasta de dados e backup agora ficam em Configurações → Dados e backup.
-- **Botão direito** com Recortar, Copiar e Colar nos campos.
-- Atalhos: Ctrl + e Ctrl − para zoom, F5 recarrega, F11 tela cheia.
-
-Quem tem a versão 1.1.0 ou anterior precisa instalar esta versão manualmente uma vez (baixe o CRM-SST-Setup abaixo, em Assets). Depois disso, as atualizações chegam sozinhas.
+- **CNPJ preenche o cadastro sozinho:** em Nova empresa, digite o CNPJ e o CRM busca na Receita a razão social, nome fantasia, CNAE, telefone, e-mail, endereço, cidade e UF. Também avisa se a empresa não estiver ativa.
+- **Sem login padrão:** no primeiro acesso de cada computador, a pessoa cria o próprio usuário e senha de administrador. Se o seu computador ainda tinha o acesso padrão nunca trocado, ele foi removido e o app vai pedir para você criar o seu.
