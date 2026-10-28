@@ -4,6 +4,7 @@ import { ORIGENS, SEGMENTOS, UFS } from "@/lib/constantes";
 import { formatarCnpj } from "@/lib/formato";
 import type { EstadoForm } from "@/lib/form";
 import type { Empresa } from "@/db/schema";
+import { CampoCnpj } from "./campo-cnpj";
 
 export function FormEmpresa({
   acao,
@@ -15,14 +16,15 @@ export function FormEmpresa({
   return (
     <Formulario acao={acao} textoBotao={empresa ? "Salvar alterações" : "Cadastrar empresa"}>
       <div className="grid gap-4 md:grid-cols-2">
-        <Campo rotulo="Razão social *" className="md:col-span-2">
+        <div className="md:col-span-2 md:max-w-md">
+          <span className="rotulo">CNPJ · digite e os dados da Receita são preenchidos sozinhos</span>
+          <CampoCnpj valorInicial={formatarCnpj(empresa?.cnpj)} />
+        </div>
+        <Campo rotulo="Razão social *">
           <input name="razaoSocial" required defaultValue={empresa?.razaoSocial} className="campo" />
         </Campo>
         <Campo rotulo="Nome fantasia">
           <input name="nomeFantasia" defaultValue={empresa?.nomeFantasia ?? ""} className="campo" />
-        </Campo>
-        <Campo rotulo="CNPJ">
-          <input name="cnpj" defaultValue={formatarCnpj(empresa?.cnpj)} placeholder="00.000.000/0000-00" className="campo" />
         </Campo>
         <Campo rotulo="Segmento">
           <select name="segmento" defaultValue={empresa?.segmento ?? ""} className="campo">

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
 import { exigirUsuario } from "@/lib/sessao";
+import { cnpjValido, consultarCnpj, type DadosCnpj } from "@/lib/cnpj";
 import { contatos, empresas, notas } from "@/db/schema";
 import { checkbox, idOpcional, lerForm, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 
@@ -101,6 +102,18 @@ export async function criarNota(empresaId: number, _: EstadoForm, formData: Form
   db.insert(notas).values({ empresaId, texto: r.dados.texto }).run();
   revalidatePath(`/empresas/${empresaId}`);
   return { ok: true };
+}
+
+/** Busca os dados públicos do CNPJ na Receita (via BrasilAPI) para preencher o formulário. */
+export async function buscarCnpj(
+  cnpj: string,
+): Promise<{ ok: true; dados: DadosCnpj } | { ok: false; erro: string }> {
+  await exigirUsuario();
+  if (!cnpjValido(cnpj)) return { ok: false, erro: "CNPJ inválido. Confira os números." };
+  const r = await consultarCnpj(cnpj);
+  if (r === "nao-encontrado") return { ok: false, erro: "CNPJ não encontrado na Receita." };
+  if (r === "indisponivel") return { ok: false, erro: "Não deu para consultar agora (sem internet ou serviço fora do ar). Preencha à mão." };
+  return { ok: true, dados: r };
 }
 
 export async function excluirNota(empresaId: number, notaId: number) {
