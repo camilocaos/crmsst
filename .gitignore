@@ -39,10 +39,10 @@ yarn-error.log*
 
 # app desktop gerado (o instalador é distribuído à parte)
 /instalador/
+/instalador-teste/
 
-# banco SQLite local
-/data/*.db
-/data/*.db-*
+# dados locais (bancos SQLite, testes) nunca vão pro Git
+/data/
 
 # typescript
 *.tsbuildinfo
