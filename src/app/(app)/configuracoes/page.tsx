@@ -11,6 +11,7 @@ import { formatarData } from "@/lib/formato";
 import { exigirUsuario } from "@/lib/sessao";
 import { trocarSenha } from "@/app/login/actions";
 import { criarUsuario, excluirUsuario, redefinirSenha, salvarEmpresa, salvarPerfil } from "./actions";
+import { AbaDados } from "./aba-dados";
 
 export const metadata: Metadata = { title: "Configurações" };
 
@@ -18,6 +19,7 @@ const ABAS = [
   { id: "empresa", nome: "Empresa e propostas" },
   { id: "conta", nome: "Minha conta" },
   { id: "usuarios", nome: "Usuários" },
+  { id: "dados", nome: "Dados e backup" },
 ] as const;
 
 export default async function ConfiguracoesPage({ searchParams }: PageProps<"/configuracoes">) {
@@ -45,6 +47,7 @@ export default async function ConfiguracoesPage({ searchParams }: PageProps<"/co
       {abaAtual === "empresa" && <AbaEmpresa />}
       {abaAtual === "conta" && <AbaConta nome={eu.nome} usuario={eu.usuario} />}
       {abaAtual === "usuarios" && <AbaUsuarios meuId={eu.id} />}
+      {abaAtual === "dados" && <AbaDados />}
     </div>
   );
 }
