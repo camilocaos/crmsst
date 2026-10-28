@@ -6,6 +6,7 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { eq } from "drizzle-orm";
 import fs from "node:fs";
 import path from "node:path";
 import * as s from "../src/db/schema";
@@ -84,7 +85,13 @@ db.insert(s.propostaItens)
   .values([
     { propostaId: proposta.id, servicoId: 1, descricao: "PGR - Programa de Gerenciamento de Riscos (por empresa)", quantidade: 1, valorUnitario: 1200 },
     { propostaId: proposta.id, servicoId: 2, descricao: "PCMSO - Programa de Controle Médico (por empresa)", quantidade: 1, valorUnitario: 900 },
-    { propostaId: proposta.id, servicoId: 6, descricao: "ASO - Exame clínico ocupacional (por funcionário)", quantidade: 69, valorUnitario: 60 },
+    {
+      propostaId: proposta.id,
+      servicoId: db.select({ id: s.servicos.id }).from(s.servicos).where(eq(s.servicos.nome, "Avaliação clínica (emissão do ASO)")).get()?.id ?? null,
+      descricao: "Avaliação clínica (emissão do ASO) (por exame)",
+      quantidade: 69,
+      valorUnitario: 50,
+    },
   ])
   .run();
 

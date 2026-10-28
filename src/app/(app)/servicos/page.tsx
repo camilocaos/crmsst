@@ -10,7 +10,7 @@ import { atualizarServico, criarServico } from "./actions";
 
 export const metadata: Metadata = { title: "Serviços SST" };
 
-const UNIDADES = ["por empresa", "por funcionário", "por funcionário/mês", "por participante", "por turma", "por mês", "por hora", "por visita"];
+const UNIDADES = ["por exame", "por colaborador", "por empresa", "por funcionário", "por funcionário/mês", "por participante", "por turma", "por mês", "por hora", "por visita"];
 
 export default async function ServicosPage() {
   await connection();

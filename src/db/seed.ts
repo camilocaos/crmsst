@@ -2,6 +2,7 @@ import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { and, count, eq } from "drizzle-orm";
 import * as schema from "./schema";
 import { conferirSenha } from "../lib/senha";
+import { aplicarTabelaClinica } from "./tabela-clinica";
 
 type Db = BetterSQLite3Database<typeof schema>;
 
@@ -12,8 +13,6 @@ const SERVICOS_PADRAO: (typeof schema.servicos.$inferInsert)[] = [
   { nome: "LTCAT - Laudo Técnico das Condições Ambientais", categoria: "Programas e laudos", precoBase: 1500, unidade: "por empresa", descricao: "Laudo para fins previdenciários." },
   { nome: "Laudo de Insalubridade e Periculosidade", categoria: "Programas e laudos", precoBase: 1800, unidade: "por empresa", descricao: "Avaliação conforme NR-15 e NR-16." },
   { nome: "AET - Análise Ergonômica do Trabalho", categoria: "Programas e laudos", precoBase: 1600, unidade: "por empresa", descricao: "Avaliação ergonômica (NR-17)." },
-  { nome: "ASO - Exame clínico ocupacional", categoria: "Medicina do trabalho", precoBase: 60, unidade: "por funcionário", descricao: "Admissional, periódico, demissional, retorno e mudança de função." },
-  { nome: "Exames complementares", categoria: "Medicina do trabalho", precoBase: 35, unidade: "por funcionário", descricao: "Audiometria, acuidade visual, espirometria etc." },
   { nome: "Envio de eventos SST ao eSocial (S-2210, S-2220, S-2240)", categoria: "eSocial", precoBase: 15, unidade: "por funcionário/mês", descricao: "Gestão e envio mensal dos eventos de SST." },
   { nome: "PPP - Perfil Profissiográfico Previdenciário", categoria: "eSocial", precoBase: 80, unidade: "por funcionário", descricao: "Emissão de PPP." },
   { nome: "Treinamento NR-35 - Trabalho em altura", categoria: "Treinamentos", precoBase: 180, unidade: "por participante", descricao: "Carga horária de 8h." },
@@ -38,6 +37,7 @@ export function seedSeVazio(db: Db) {
   }
   db.insert(schema.configuracoes).values(CONFIG_PADRAO).onConflictDoNothing().run();
 
+  aplicarTabelaClinica(db); // exames da CUIDI Saúde Ocupacional (roda uma vez por versão da tabela)
   removerAcessoPadraoAntigo(db);
 }
 
