@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/desktop/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -40,6 +41,8 @@ yarn-error.log*
 # app desktop gerado (o instalador é distribuído à parte)
 /instalador/
 /instalador-teste/
+# app instalado dentro da pasta do projeto (não versionar)
+/CRM SST/
 
 # dados locais (bancos SQLite, testes) nunca vão pro Git
 /data/
