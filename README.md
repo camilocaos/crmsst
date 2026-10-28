@@ -12,6 +12,14 @@ Feito com **Next.js 16**, **React 19**, **Tailwind CSS 4** e **SQLite** (better-
 - **Catálogo de serviços SST** — PGR, PCMSO, LTCAT, AET, ASO, eSocial, treinamentos de NRs e mais, com preço base e unidade (por empresa, por funcionário, por turma...).
 - **Propostas** — monte com itens do catálogo, ajuste quantidades e desconto, imprima ou salve em PDF, envie pelo WhatsApp. Marcar como *enviada* ou *aceita* atualiza a oportunidade no funil.
 - **Dashboard** — vendido no mês x meta, funil em aberto, conversão, vendas dos últimos 6 meses, tarefas do dia e propostas aguardando resposta.
+- **Login** — acesso com usuário e senha (senhas guardadas com scrypt, nunca em texto). Vários usuários por computador.
+- **Configurações** (engrenagem no canto do menu) — dados da sua empresa que saem nas propostas, meta mensal, validade e condições padrão, seu perfil e senha, e cadastro de usuários.
+
+## Primeiro acesso
+
+Na primeira vez que o app abre, ele cria o usuário **`camilocaos`** com a senha **`admin`**. Ao entrar, o app **obriga a trocar a senha** antes de liberar o CRM (essa senha padrão está escrita aqui no código, que é público).
+
+Para dar acesso a outra pessoa no mesmo computador: Configurações → Usuários → Novo usuário, com uma senha provisória. Ela troca a senha no primeiro login.
 
 ## App para Windows
 
