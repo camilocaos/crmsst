@@ -10,7 +10,7 @@ import { nomeEtapa } from "@/lib/constantes";
 import { formatarData } from "@/lib/formato";
 import { FormOportunidade } from "../form-oportunidade";
 import { atualizarOportunidade, excluirOportunidade } from "../actions";
-import { opcoesEmpresasEContatos } from "../opcoes";
+import { opcoesEmpresasEContatos } from "@/lib/opcoes";
 
 export const metadata: Metadata = { title: "Oportunidade" };
 

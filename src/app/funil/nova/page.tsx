@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { BotaoLink, Cabecalho, Cartao, Vazio } from "@/components/ui";
 import { FormOportunidade } from "../form-oportunidade";
 import { criarOportunidade } from "../actions";
-import { opcoesEmpresasEContatos } from "../opcoes";
+import { opcoesEmpresasEContatos } from "@/lib/opcoes";
 
 export const metadata: Metadata = { title: "Nova oportunidade" };
 

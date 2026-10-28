@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { contatos, empresas, notas, oportunidades } from "@/db/schema";
+import { contatos, empresas, notas, oportunidades, tarefas } from "@/db/schema";
+import { buscarTarefas, pendentes } from "@/app/tarefas/consultas";
+import { ListaTarefas } from "@/app/tarefas/lista-tarefas";
+import { NovaTarefa } from "@/app/tarefas/nova-tarefa";
 import { BotaoLink, Cabecalho, Cartao, Selo, TituloCartao } from "@/components/ui";
 import { BotaoConfirmar, Formulario } from "@/components/formulario";
 import { STATUS_EMPRESA, nomeEtapa } from "@/lib/constantes";
@@ -43,6 +46,7 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
     .where(eq(oportunidades.empresaId, id))
     .orderBy(desc(oportunidades.id))
     .all();
+  const listaTarefas = buscarTarefas(pendentes(eq(tarefas.empresaId, id)));
   const status = STATUS_EMPRESA[empresa.status];
   const zap = linkWhatsapp(empresa.telefone);
 
@@ -145,6 +149,21 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
           </Cartao>
 
           {/* @secoes-relacionadas */}
+
+          <Cartao>
+            <TituloCartao>Tarefas pendentes</TituloCartao>
+            {listaTarefas.length === 0 ? (
+              <p className="mb-2 text-sm text-slate-500">Nenhuma tarefa pendente.</p>
+            ) : (
+              <ListaTarefas itens={listaTarefas} mostrarEmpresa={false} />
+            )}
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm font-medium text-marca-700">+ Agendar follow-up</summary>
+              <div className="mt-3">
+                <NovaTarefa empresaId={id} />
+              </div>
+            </details>
+          </Cartao>
 
           <Cartao>
             <TituloCartao>Histórico de interações</TituloCartao>
