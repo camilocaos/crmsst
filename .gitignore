@@ -17,8 +17,9 @@
 /.next/
 /out/
 
-# production
-/build
+# production (exceto o ícone do app desktop)
+/build/*
+!/build/icon.png
 
 # misc
 .DS_Store
