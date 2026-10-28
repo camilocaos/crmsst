@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { contatos, empresas, notas } from "@/db/schema";
+import { contatos, empresas, notas, oportunidades } from "@/db/schema";
 import { BotaoLink, Cabecalho, Cartao, Selo, TituloCartao } from "@/components/ui";
 import { BotaoConfirmar, Formulario } from "@/components/formulario";
-import { STATUS_EMPRESA } from "@/lib/constantes";
-import { formatarCnpj, formatarData, formatarDataHora, linkWhatsapp } from "@/lib/formato";
+import { STATUS_EMPRESA, nomeEtapa } from "@/lib/constantes";
+import { formatarCnpj, formatarData, formatarDataHora, formatarMoeda, linkWhatsapp } from "@/lib/formato";
 import {
   criarContato,
   criarNota,
@@ -36,6 +37,12 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
     .orderBy(desc(contatos.principal), contatos.nome)
     .all();
   const listaNotas = db.select().from(notas).where(eq(notas.empresaId, id)).orderBy(desc(notas.id)).all();
+  const listaOportunidades = db
+    .select()
+    .from(oportunidades)
+    .where(eq(oportunidades.empresaId, id))
+    .orderBy(desc(oportunidades.id))
+    .all();
   const status = STATUS_EMPRESA[empresa.status];
   const zap = linkWhatsapp(empresa.telefone);
 
@@ -102,6 +109,38 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
               <p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
                 {empresa.observacoes}
               </p>
+            )}
+          </Cartao>
+
+          <Cartao>
+            <TituloCartao
+              acao={
+                <BotaoLink href={`/funil/nova?empresa=${id}`} variante="fantasma" className="text-xs">
+                  + Oportunidade
+                </BotaoLink>
+              }
+            >
+              Oportunidades
+            </TituloCartao>
+            {listaOportunidades.length === 0 ? (
+              <p className="text-sm text-slate-500">Nenhuma oportunidade com esta empresa.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {listaOportunidades.map((o) => (
+                  <li key={o.id} className="flex items-center justify-between gap-3 py-2.5">
+                    <div>
+                      <Link href={`/funil/${o.id}`} className="text-sm font-medium text-slate-900 hover:text-marca-700">
+                        {o.titulo}
+                      </Link>
+                      <p className="text-xs text-slate-500">
+                        {nomeEtapa(o.etapa)}
+                        {o.previsaoFechamento ? ` · previsão ${formatarData(o.previsaoFechamento)}` : ""}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold tabular-nums">{formatarMoeda(o.valor)}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </Cartao>
 
