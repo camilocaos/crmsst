@@ -13,7 +13,33 @@ Feito com **Next.js 16**, **React 19**, **Tailwind CSS 4** e **SQLite** (better-
 - **Propostas** — monte com itens do catálogo, ajuste quantidades e desconto, imprima ou salve em PDF, envie pelo WhatsApp. Marcar como *enviada* ou *aceita* atualiza a oportunidade no funil.
 - **Dashboard** — vendido no mês x meta, funil em aberto, conversão, vendas dos últimos 6 meses, tarefas do dia e propostas aguardando resposta.
 
-## Como rodar
+## App para Windows
+
+O CRM roda como um programa de Windows (Electron), com instalador, atalho na Área de Trabalho e menu Iniciar.
+
+- **Dados:** ficam em `Documentos\CRM SST\crm.db`, com um backup automático por dia em `Documentos\CRM SST\backups` (guarda os últimos 30).
+- **Menu Arquivo:** "Abrir pasta de dados" e "Salvar backup como...".
+- Desinstalar ou atualizar o app **não apaga** os dados.
+
+### Gerar o instalador
+
+```bash
+npm run app:instalador
+```
+
+Sai em `instalador/`: o `CRM-SST-Setup-<versão>.exe` e um `LEIA-ME.txt` com instruções para quem for instalar. É essa pasta que você passa pra equipe. Para lançar uma versão nova, aumente `version` em `desktop/package.json` antes de gerar.
+
+O instalador não tem assinatura digital, então o Windows mostra o aviso "O Windows protegeu o computador". É só clicar em **Mais informações → Executar assim mesmo**.
+
+### Rodar o app em modo desenvolvimento
+
+```bash
+npm run app:dev
+```
+
+Abre a janela do app usando o `next dev` (com recarregamento automático) e o banco em `data/crm.db`.
+
+## Como rodar no navegador
 
 Requisitos: Node.js 20.9 ou mais recente.
 
@@ -46,6 +72,9 @@ Isso cria `data/crm-demo.db` com empresas, oportunidades, tarefas e uma proposta
 | `npm run db:generate` | Gera migration depois de mudar `src/db/schema.ts` |
 | `npm run demo` | Cria o banco de demonstração |
 | `npm run dev:demo` | Roda o app usando o banco de demonstração |
+| `npm run app:dev` | Abre o app desktop em modo desenvolvimento |
+| `npm run app:instalador` | Gera o instalador do Windows em `instalador/` |
+| `npm run app:icone` | Regera o ícone do app (`build/icon.png`) |
 
 ## Estrutura
 
@@ -56,7 +85,9 @@ src/
   db/             schema do banco, conexão e dados iniciais
   lib/            constantes, formatação, configurações e helpers
 drizzle/          migrations do banco
-scripts/          dados de demonstração
+desktop/          processo principal do app Windows (Electron)
+build/            ícone do app
+scripts/          dados de demonstração, empacotamento e utilitários
 ```
 
 Os arquivos do banco (`data/*.db`) ficam fora do Git, então seus dados de clientes nunca vão pro GitHub.

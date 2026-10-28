@@ -10,7 +10,46 @@
     "typecheck": "next typegen && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "demo": "tsx scripts/demo.ts",
-    "dev:demo": "node scripts/dev-demo.mjs"
+    "dev:demo": "node scripts/dev-demo.mjs",
+    "app:dev": "node scripts/app-dev.mjs",
+    "app:instalador": "node scripts/empacotar.mjs",
+    "app:icone": "electron scripts/gerar-icone.cjs"
+  },
+  "build": {
+    "appId": "com.camilocaos.crmsst",
+    "productName": "CRM SST",
+    "electronVersion": "45.1.0",
+    "directories": {
+      "app": "desktop",
+      "output": "instalador",
+      "buildResources": "build"
+    },
+    "asar": true,
+    "files": ["main.cjs", "package.json", "!**/node_modules/**"],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "server",
+        "filter": ["**/*"]
+      }
+    ],
+    "afterPack": "scripts/after-pack.cjs",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png",
+      "artifactName": "CRM-SST-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CRM SST",
+      "uninstallDisplayName": "CRM SST",
+      "language": "1046",
+      "deleteAppDataOnUninstall": false
+    }
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -28,6 +67,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
+    "electron": "^45.1.0",
+    "electron-builder": "^26.18.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
@@ -39,6 +80,7 @@
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true,
     "better-sqlite3@13.0.3": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "electron-winstaller": false
   }
 }

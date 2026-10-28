@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# app desktop gerado (o instalador é distribuído à parte)
+/instalador/
+
 # banco SQLite local
 /data/*.db
 /data/*.db-*
