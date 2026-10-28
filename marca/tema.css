@@ -1,0 +1,16 @@
+:root {
+  --primary: #007FAE; --primary-hover: #006C94;
+  --nav: #10334A; --accent: #37C7E8;
+  --background: #F4F8FB; --surface: #FFFFFF;
+  --text: #243746; --muted: #526779; --border: #DCE6ED;
+  --success: #18794E; --warning: #8A5700; --danger: #B42318;
+  --radius-card: 12px; --radius-control: 8px;
+  --font-ui: "Segoe UI", system-ui, sans-serif;
+}
+body { background: var(--background); color: var(--text); font-family: var(--font-ui); font-size: 14px; }
+.sidebar { background: var(--nav); color: white; }
+.sidebar [aria-current="page"] { background: var(--primary); color: white; border-radius: var(--radius-control); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 20px; }
+.button-primary { background: var(--primary); color: white; border: 0; border-radius: var(--radius-control); min-height: 40px; padding: 10px 16px; font-weight: 600; }
+.button-primary:hover { background: var(--primary-hover); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }

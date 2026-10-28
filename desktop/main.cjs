@@ -12,6 +12,7 @@ const PASTA_DADOS = process.env.CRM_DATA_DIR || path.join(app.getPath("documents
 const ARQUIVO_DB = path.join(PASTA_DADOS, "crm.db");
 const PASTA_BACKUPS = path.join(PASTA_DADOS, "backups");
 const BACKUPS_MANTIDOS = 30;
+const ICONE = path.join(__dirname, "icone.png");
 // Segredo da sessão: só este processo consegue chamar a rota de backup do servidor
 const TOKEN = process.env.CRM_TOKEN || crypto.randomBytes(24).toString("hex");
 
@@ -54,10 +55,11 @@ async function iniciar() {
 }
 
 function mostrarSplash() {
-  const splash = new BrowserWindow({ width: 360, height: 200, frame: false, resizable: false, show: true, backgroundColor: "#064e3b" });
-  const html = `<body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#064e3b;color:#ecfdf5;font-family:Segoe UI,sans-serif">
-    <div style="width:56px;height:56px;border-radius:12px;background:#10b981;display:flex;align-items:center;justify-content:center;font-weight:700;color:white">SST</div>
-    <p style="margin-top:16px">Abrindo o CRM...</p></body>`;
+  const splash = new BrowserWindow({ width: 360, height: 200, frame: false, resizable: false, show: true, icon: ICONE, backgroundColor: "#10334A" });
+  const logo = `data:image/png;base64,${fs.readFileSync(ICONE).toString("base64")}`;
+  const html = `<body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#10334A;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;font-size:14px">
+    <img src="${logo}" width="56" height="56" alt="">
+    <p style="margin-top:16px;color:#C9D8E3">Abrindo o CRM...</p></body>`;
   splash.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   return splash;
 }
@@ -131,7 +133,8 @@ function abrirJanela(url) {
     minWidth: 960,
     minHeight: 600,
     title: "CRM SST",
-    backgroundColor: "#f4f6f8",
+    icon: ICONE,
+    backgroundColor: "#F4F8FB",
     show: false,
     webPreferences: { contextIsolation: true, sandbox: true },
   });

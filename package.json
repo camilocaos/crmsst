@@ -25,7 +25,7 @@
       "buildResources": "build"
     },
     "asar": true,
-    "files": ["main.cjs", "package.json", "!**/node_modules/**"],
+    "files": ["main.cjs", "icone.png", "package.json", "!**/node_modules/**"],
     "extraResources": [
       {
         "from": ".next/standalone",
