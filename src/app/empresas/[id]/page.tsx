@@ -4,13 +4,14 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { contatos, empresas, notas, oportunidades, tarefas } from "@/db/schema";
+import { contatos, empresas, notas, oportunidades, propostas, tarefas } from "@/db/schema";
+import { numeroProposta } from "@/lib/propostas";
 import { buscarTarefas, pendentes } from "@/app/tarefas/consultas";
 import { ListaTarefas } from "@/app/tarefas/lista-tarefas";
 import { NovaTarefa } from "@/app/tarefas/nova-tarefa";
 import { BotaoLink, Cabecalho, Cartao, Selo, TituloCartao } from "@/components/ui";
 import { BotaoConfirmar, Formulario } from "@/components/formulario";
-import { STATUS_EMPRESA, nomeEtapa } from "@/lib/constantes";
+import { STATUS_EMPRESA, STATUS_PROPOSTA, nomeEtapa } from "@/lib/constantes";
 import { formatarCnpj, formatarData, formatarDataHora, formatarMoeda, linkWhatsapp } from "@/lib/formato";
 import {
   criarContato,
@@ -47,6 +48,12 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
     .orderBy(desc(oportunidades.id))
     .all();
   const listaTarefas = buscarTarefas(pendentes(eq(tarefas.empresaId, id)));
+  const listaPropostas = db
+    .select()
+    .from(propostas)
+    .where(eq(propostas.empresaId, id))
+    .orderBy(desc(propostas.id))
+    .all();
   const status = STATUS_EMPRESA[empresa.status];
   const zap = linkWhatsapp(empresa.telefone);
 
@@ -148,7 +155,34 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
             )}
           </Cartao>
 
-          {/* @secoes-relacionadas */}
+          <Cartao>
+            <TituloCartao
+              acao={
+                <BotaoLink href={`/propostas/nova?empresa=${id}`} variante="fantasma" className="text-xs">
+                  + Proposta
+                </BotaoLink>
+              }
+            >
+              Propostas
+            </TituloCartao>
+            {listaPropostas.length === 0 ? (
+              <p className="text-sm text-slate-500">Nenhuma proposta para esta empresa.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {listaPropostas.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/propostas/${p.id}`} className="text-sm font-medium text-slate-900 hover:text-marca-700">
+                        Nº {numeroProposta(p.id, p.criadoEm)}
+                      </Link>
+                      <Selo classe={STATUS_PROPOSTA[p.status].classe}>{STATUS_PROPOSTA[p.status].nome}</Selo>
+                    </div>
+                    <span className="text-xs text-slate-500">{formatarData(p.criadoEm)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Cartao>
 
           <Cartao>
             <TituloCartao>Tarefas pendentes</TituloCartao>
