@@ -90,6 +90,13 @@ export default async function PropostaPage({ params }: PageProps<"/propostas/[id
           <div>
             <p className="text-xl font-bold text-marca-900">{config.nomeEmpresa}</p>
             <p className="text-sm text-slate-500">Saúde e Segurança do Trabalho</p>
+            <div className="mt-1 space-y-0.5 text-xs text-slate-500">
+              {config.cnpjEmpresa && <p>CNPJ {formatarCnpj(config.cnpjEmpresa)}</p>}
+              {(config.telefoneEmpresa || config.emailEmpresa) && (
+                <p>{[config.telefoneEmpresa, config.emailEmpresa].filter(Boolean).join(" · ")}</p>
+              )}
+              {config.enderecoEmpresa && <p>{config.enderecoEmpresa}</p>}
+            </div>
           </div>
           <div className="text-right">
             <p className="text-xs uppercase tracking-wide text-slate-500">Proposta comercial</p>

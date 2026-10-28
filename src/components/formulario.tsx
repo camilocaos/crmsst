@@ -17,6 +17,8 @@ export function Formulario({
   limparAoSalvar = false,
   className = "",
   rodape,
+  larguraTotal = false,
+  mensagemSucesso,
 }: {
   acao: Acao;
   children: ReactNode;
@@ -24,6 +26,10 @@ export function Formulario({
   limparAoSalvar?: boolean;
   className?: string;
   rodape?: ReactNode;
+  /** Botão de enviar ocupando a largura toda (telas de login). */
+  larguraTotal?: boolean;
+  /** Texto exibido quando a action responde { ok: true }. */
+  mensagemSucesso?: string;
 }) {
   const [estado, formAction] = useActionState(acao, undefined);
   const ref = useRef<HTMLFormElement>(null);
@@ -36,10 +42,13 @@ export function Formulario({
     <form ref={ref} action={formAction} className={className}>
       {children}
       {estado?.erro && (
-        <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{estado.erro}</p>
+        <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{estado.erro}</p>
       )}
-      <div className="mt-4 flex items-center gap-2">
-        <BotaoEnviar>{textoBotao}</BotaoEnviar>
+      {estado?.ok && mensagemSucesso && (
+        <p role="status" className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{mensagemSucesso}</p>
+      )}
+      <div className={`mt-4 flex items-center gap-3 ${larguraTotal ? "flex-col" : ""}`}>
+        <BotaoEnviar className={larguraTotal ? "w-full py-2.5" : ""}>{textoBotao}</BotaoEnviar>
         {rodape}
       </div>
     </form>

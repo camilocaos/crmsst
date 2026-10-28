@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
+import { exigirUsuario } from "@/lib/sessao";
 import { empresas, oportunidades, propostaItens, propostas } from "@/db/schema";
 import { ETAPAS_ABERTAS } from "@/lib/constantes";
 import { hoje } from "@/lib/formato";
@@ -64,6 +65,7 @@ function sincronizarOportunidade(oportunidadeId: number | null, status: string, 
 }
 
 export async function salvarProposta(id: number | null, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, propostaSchema);
   if (!r.valido) return { erro: r.erro };
   const { itens, ...dados } = r.dados;
@@ -89,6 +91,7 @@ export async function salvarProposta(id: number | null, _: EstadoForm, formData:
 }
 
 export async function mudarStatusProposta(id: number, status: "rascunho" | "enviada" | "aceita" | "recusada") {
+  await exigirUsuario();
   const p = db.select().from(propostas).where(eq(propostas.id, id)).get();
   if (!p) return;
   db.update(propostas).set({ status }).where(eq(propostas.id, id)).run();
@@ -98,6 +101,7 @@ export async function mudarStatusProposta(id: number, status: "rascunho" | "envi
 }
 
 export async function excluirProposta(id: number) {
+  await exigirUsuario();
   db.delete(propostas).where(eq(propostas.id, id)).run();
   revalidatePath("/", "layout");
   redirect("/propostas");

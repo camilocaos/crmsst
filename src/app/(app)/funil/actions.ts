@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
+import { exigirUsuario } from "@/lib/sessao";
 import { empresas, oportunidades } from "@/db/schema";
 import { ETAPAS, type EtapaId } from "@/lib/constantes";
 import { hoje } from "@/lib/formato";
@@ -41,6 +42,7 @@ function marcarClienteSeGanho(empresaId: number, etapa: EtapaId) {
 }
 
 export async function criarOportunidade(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, oportunidadeSchema);
   if (!r.valido) return { erro: r.erro };
   const d = r.dados;
@@ -53,6 +55,7 @@ export async function criarOportunidade(_: EstadoForm, formData: FormData): Prom
 }
 
 export async function atualizarOportunidade(id: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, oportunidadeSchema);
   if (!r.valido) return { erro: r.erro };
   const d = r.dados;
@@ -73,6 +76,7 @@ export async function atualizarOportunidade(id: number, _: EstadoForm, formData:
 
 /** Usado pelo arrastar-e-soltar do Kanban. */
 export async function moverOportunidade(id: number, etapa: string, motivoPerda?: string) {
+  await exigirUsuario();
   const etapaValida = z.enum(idsEtapas).parse(etapa);
   const atual = db.select().from(oportunidades).where(eq(oportunidades.id, id)).get();
   if (!atual || atual.etapa === etapaValida) return;
@@ -89,6 +93,7 @@ export async function moverOportunidade(id: number, etapa: string, motivoPerda?:
 }
 
 export async function excluirOportunidade(id: number) {
+  await exigirUsuario();
   db.delete(oportunidades).where(eq(oportunidades.id, id)).run();
   revalidatePath("/", "layout");
   redirect("/funil");

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/db";
+import { exigirUsuario } from "@/lib/sessao";
 import { contatos, empresas, notas } from "@/db/schema";
 import { checkbox, idOpcional, lerForm, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 
@@ -27,6 +28,7 @@ const empresaSchema = z.object({
 });
 
 export async function criarEmpresa(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, empresaSchema);
   if (!r.valido) return { erro: r.erro };
   const [nova] = db.insert(empresas).values(r.dados).returning({ id: empresas.id }).all();
@@ -35,6 +37,7 @@ export async function criarEmpresa(_: EstadoForm, formData: FormData): Promise<E
 }
 
 export async function atualizarEmpresa(id: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, empresaSchema);
   if (!r.valido) return { erro: r.erro };
   db.update(empresas).set(r.dados).where(eq(empresas.id, id)).run();
@@ -43,6 +46,7 @@ export async function atualizarEmpresa(id: number, _: EstadoForm, formData: Form
 }
 
 export async function excluirEmpresa(id: number) {
+  await exigirUsuario();
   db.delete(empresas).where(eq(empresas.id, id)).run();
   revalidatePath("/", "layout");
   redirect("/empresas");
@@ -57,6 +61,7 @@ const contatoSchema = z.object({
 });
 
 export async function criarContato(empresaId: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, contatoSchema);
   if (!r.valido) return { erro: r.erro };
   db.transaction((tx) => {
@@ -70,6 +75,7 @@ export async function criarContato(empresaId: number, _: EstadoForm, formData: F
 }
 
 export async function excluirContato(empresaId: number, contatoId: number) {
+  await exigirUsuario();
   db.delete(contatos)
     .where(and(eq(contatos.id, contatoId), eq(contatos.empresaId, empresaId)))
     .run();
@@ -77,6 +83,7 @@ export async function excluirContato(empresaId: number, contatoId: number) {
 }
 
 export async function tornarPrincipal(empresaId: number, contatoId: number) {
+  await exigirUsuario();
   db.transaction((tx) => {
     tx.update(contatos).set({ principal: false }).where(eq(contatos.empresaId, empresaId)).run();
     tx.update(contatos)
@@ -88,6 +95,7 @@ export async function tornarPrincipal(empresaId: number, contatoId: number) {
 }
 
 export async function criarNota(empresaId: number, _: EstadoForm, formData: FormData): Promise<EstadoForm> {
+  await exigirUsuario();
   const r = lerForm(formData, z.object({ texto: textoObrigatorio("Texto") }));
   if (!r.valido) return { erro: r.erro };
   db.insert(notas).values({ empresaId, texto: r.dados.texto }).run();
@@ -96,6 +104,7 @@ export async function criarNota(empresaId: number, _: EstadoForm, formData: Form
 }
 
 export async function excluirNota(empresaId: number, notaId: number) {
+  await exigirUsuario();
   db.delete(notas).where(and(eq(notas.id, notaId), eq(notas.empresaId, empresaId))).run();
   revalidatePath(`/empresas/${empresaId}`);
 }

@@ -11,10 +11,12 @@ const ITENS = [
   { href: "/tarefas", nome: "Tarefas", icone: "M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h11" },
   { href: "/propostas", nome: "Propostas", icone: "M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6zM14 3v6h6M8 13h8M8 17h5" },
   { href: "/servicos", nome: "Serviços SST", icone: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z" },
-  { href: "/configuracoes", nome: "Configurações", icone: "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" },
 ];
 
-export function Sidebar() {
+const ICONE_ENGRENAGEM =
+  "M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z";
+
+export function Sidebar({ nomeUsuario, sair }: { nomeUsuario: string; sair: () => Promise<void> }) {
   const pathname = usePathname();
   const [aberto, setAberto] = useState(false);
 
@@ -67,7 +69,32 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
-        <p className="px-5 py-4 text-xs text-emerald-200/50">by camilocaos</p>
+        <div className="border-t border-white/10 p-3">
+          <div className="flex items-center gap-2 rounded-lg px-2 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-marca-500 text-sm font-semibold text-white">
+              {nomeUsuario.trim().charAt(0).toUpperCase() || "?"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">{nomeUsuario}</p>
+              <form action={sair}>
+                <button className="text-xs text-emerald-200/70 hover:text-white">Sair</button>
+              </form>
+            </div>
+            <Link
+              href="/configuracoes"
+              onClick={() => setAberto(false)}
+              title="Configurações"
+              aria-label="Configurações"
+              className={`rounded-lg p-2 transition ${
+                ativo("/configuracoes") ? "bg-white/15 text-white" : "text-emerald-100/80 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d={ICONE_ENGRENAGEM} />
+              </svg>
+            </Link>
+          </div>
+        </div>
       </aside>
     </>
   );
