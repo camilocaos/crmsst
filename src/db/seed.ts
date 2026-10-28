@@ -1,6 +1,7 @@
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { count } from "drizzle-orm";
 import * as schema from "./schema";
+import { gerarHashSenha } from "../lib/senha";
 
 type Db = BetterSQLite3Database<typeof schema>;
 
@@ -36,4 +37,12 @@ export function seedSeVazio(db: Db) {
     db.insert(schema.servicos).values(SERVICOS_PADRAO).run();
   }
   db.insert(schema.configuracoes).values(CONFIG_PADRAO).onConflictDoNothing().run();
+
+  // Primeiro acesso: usuário padrão, com troca de senha obrigatória no login
+  const [{ usuarios }] = db.select({ usuarios: count() }).from(schema.usuarios).all();
+  if (usuarios === 0) {
+    db.insert(schema.usuarios)
+      .values({ usuario: "camilocaos", nome: "Camilo", senhaHash: gerarHashSenha("admin"), trocarSenha: true })
+      .run();
+  }
 }

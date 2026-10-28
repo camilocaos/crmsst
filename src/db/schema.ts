@@ -135,6 +135,27 @@ export const propostaItens = sqliteTable("proposta_itens", {
   valorUnitario: real("valor_unitario").notNull().default(0),
 });
 
+export const usuarios = sqliteTable("usuarios", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  usuario: text("usuario").notNull().unique(),
+  nome: text("nome").notNull(),
+  /** Formato "scrypt:<salt hex>:<hash hex>". */
+  senhaHash: text("senha_hash").notNull(),
+  /** Obriga a trocar a senha no próximo login (senha padrão ou redefinida). */
+  trocarSenha: integer("trocar_senha", { mode: "boolean" }).notNull().default(false),
+  criadoEm: criadoEm(),
+});
+
+export const sessoes = sqliteTable("sessoes", {
+  /** SHA-256 do token guardado no cookie (o token em si nunca vai pro banco). */
+  id: text("id").primaryKey(),
+  usuarioId: integer("usuario_id")
+    .notNull()
+    .references(() => usuarios.id, { onDelete: "cascade" }),
+  expiraEm: text("expira_em").notNull(),
+  criadoEm: criadoEm(),
+});
+
 /** Configurações chave/valor (nome da empresa, meta mensal...). */
 export const configuracoes = sqliteTable("configuracoes", {
   chave: text("chave").primaryKey(),
@@ -149,3 +170,4 @@ export type Oportunidade = typeof oportunidades.$inferSelect;
 export type Tarefa = typeof tarefas.$inferSelect;
 export type Proposta = typeof propostas.$inferSelect;
 export type PropostaItem = typeof propostaItens.$inferSelect;
+export type Usuario = typeof usuarios.$inferSelect;
