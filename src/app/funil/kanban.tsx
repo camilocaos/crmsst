@@ -34,19 +34,64 @@ export function Kanban({ cartoes }: { cartoes: CartaoKanban[] }) {
     const cartao = lista.find((c) => c.id === id);
     if (!cartao || cartao.etapa === etapa) return;
 
-    let motivo: string | undefined;
     if (etapa === "perdido") {
-      const resposta = prompt("Motivo da perda (opcional): preço, concorrente, sem resposta...");
-      if (resposta === null) return; // cancelou
-      motivo = resposta;
+      setPerda({ id, titulo: cartao.titulo });
+      return;
     }
+    mover(id, etapa);
+  }
+
+  function mover(id: number, etapa: string, motivo?: string) {
     startTransition(async () => {
       moverLocal({ id, etapa });
       await moverOportunidade(id, etapa, motivo);
     });
   }
 
+  const [perda, setPerda] = useState<{ id: number; titulo: string } | null>(null);
+  const [motivo, setMotivo] = useState("");
+
+  function fecharPerda(confirmar: boolean) {
+    if (confirmar && perda) mover(perda.id, "perdido", motivo);
+    setPerda(null);
+    setMotivo("");
+  }
+
   return (
+    <>
+    {perda && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => fecharPerda(false)}>
+        <form
+          onClick={(e) => e.stopPropagation()}
+          onSubmit={(e) => {
+            e.preventDefault();
+            fecharPerda(true);
+          }}
+          className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
+        >
+          <h2 className="text-base font-semibold text-slate-900">Marcar como perdida</h2>
+          <p className="mt-1 text-sm text-slate-500">{perda.titulo}</p>
+          <label className="mt-4 block">
+            <span className="rotulo">Motivo da perda (opcional)</span>
+            <input
+              autoFocus
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              placeholder="Preço, concorrente, sem resposta..."
+              className="campo"
+            />
+          </label>
+          <div className="mt-5 flex justify-end gap-2">
+            <button type="button" onClick={() => fecharPerda(false)} className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
+              Cancelar
+            </button>
+            <button type="submit" className="rounded-lg bg-rose-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-rose-700">
+              Marcar como perdida
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
     <div className="-mx-4 overflow-x-auto px-4 pb-4 md:-mx-8 md:px-8">
       <div className="flex min-w-max gap-4">
         {ETAPAS.map((etapa) => {
@@ -108,5 +153,6 @@ export function Kanban({ cartoes }: { cartoes: CartaoKanban[] }) {
         })}
       </div>
     </div>
+    </>
   );
 }
