@@ -6,7 +6,7 @@ type Db = BetterSQLite3Database<typeof schema>;
 type Item = typeof schema.servicos.$inferInsert;
 
 /** Versão da tabela padrão da clínica. Mude ao publicar uma tabela nova. */
-export const VERSAO_TABELA_CLINICA = "2026-10";
+export const VERSAO_TABELA_CLINICA = "2026-10.2"; // .2: inclui o VDRL
 
 const exame = (categoria: string, nome: string, precoBase: number, descricao?: string): Item => ({
   categoria,
@@ -45,6 +45,7 @@ export const TABELA_CLINICA: Item[] = [
   exame("Exames laboratoriais", "TGP / ALT", 25),
   exame("Exames laboratoriais", "Hepatite B (HBsAg / Anti-HBs)", 60),
   exame("Exames laboratoriais", "Micológico das unhas", 20),
+  exame("Exames laboratoriais", "VDRL", 20),
 
   exame("Serviços ocupacionais complementares", "Laudo PCD", 70),
   exame("Serviços ocupacionais complementares", "Avaliação de retorno ao trabalho", 50),

@@ -1,2 +1,2 @@
-- **Tabela de valores da clínica no catálogo:** os 28 exames da CUIDI Saúde Ocupacional (clínicos, imagem, laboratoriais e serviços complementares) e os combos NR-35, NR-10 e manipulação de alimentos já aparecem em Serviços e na montagem de propostas, sempre cobrados por exame realizado.
+- **Tabela de valores da clínica no catálogo:** os 29 exames da CUIDI Saúde Ocupacional (clínicos, imagem, laboratoriais, incluindo o VDRL, e serviços complementares) e os combos NR-35, NR-10 e manipulação de alimentos já aparecem em Serviços e na montagem de propostas, sempre cobrados por exame realizado.
 - Os itens genéricos antigos de exame foram desativados. Preços que você já tinha editado não foram alterados.
