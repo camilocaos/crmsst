@@ -42,10 +42,9 @@ export default async function FunilPage() {
     <>
       <Cabecalho
         titulo="Funil de vendas"
-        subtitulo={`${abertas.length} em aberto · ${formatarMoeda(totalAberto)} no funil · ${formatarMoeda(ponderado)} ponderado pela probabilidade`}
+        subtitulo={`${abertas.length} em aberto · ${formatarMoeda(totalAberto)} no funil · ${formatarMoeda(ponderado)} ponderado`}
         acoes={<BotaoLink href="/funil/nova">+ Nova oportunidade</BotaoLink>}
       />
-      <p className="mb-3 text-xs text-slate-500">Arraste os cartões entre as colunas para mudar a etapa.</p>
       <Kanban cartoes={cartoes} />
     </>
   );

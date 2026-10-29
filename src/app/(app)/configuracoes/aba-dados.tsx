@@ -33,7 +33,7 @@ export function AbaDados() {
   if (!info) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600">
-        As opções de pasta de dados e backup ficam disponíveis no app instalado no Windows.
+        Disponível no app para Windows.
       </div>
     );
   }
@@ -54,10 +54,9 @@ export function AbaDados() {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-semibold text-marca-900">Onde ficam seus dados</h2>
+        <h2 className="text-sm font-semibold text-marca-900">Dados e backup</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Tudo o que você cadastra fica neste computador, na pasta abaixo. O app faz uma cópia automática por dia
-          (guarda as últimas 30) na subpasta <span className="font-medium">backups</span>.
+          Backup automático diário (últimos 30 dias).
         </p>
         <p className="mt-3 break-all rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">{info.pastaDados}</p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -92,7 +91,7 @@ export function AbaDados() {
           </a>
         </p>
         <p className="mt-3 text-xs text-slate-500">
-          Atalhos: Ctrl + / Ctrl − para zoom, Ctrl 0 volta ao normal, F5 recarrega, F11 tela cheia.
+          Atalhos: Ctrl + / Ctrl − zoom · Ctrl 0 tamanho normal · F5 recarregar · F11 tela cheia
         </p>
       </div>
     </div>

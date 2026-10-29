@@ -35,10 +35,9 @@ export default async function ContratosPage() {
     <>
       <Cabecalho
         titulo="Contratos"
-        subtitulo="Gerados a partir das propostas aceitas: um da Segurança do Trabalho e/ou um da Saúde Ocupacional."
       />
       {lista.length === 0 ? (
-        <Vazio>Nenhum contrato ainda. Marque uma proposta como aceita e clique em “Gerar contratos”.</Vazio>
+        <Vazio>Nenhum contrato ainda.</Vazio>
       ) : (
         <Tabela>
           <thead>

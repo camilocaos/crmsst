@@ -34,8 +34,8 @@ const empresaSchema = z.object({
 
 /** Mensagem de bloqueio quando a empresa já existe (o formulário mostra o link para o cadastro). */
 const jaCadastrada = (e: EmpresaExistente): EstadoForm => ({
-  erro: `Essa empresa já está cadastrada como "${e.nome}". Abra o cadastro existente em vez de criar outro.`,
-  link: { href: `/empresas/${e.id}`, texto: "Abrir o cadastro existente" },
+  erro: `Empresa já cadastrada: ${e.nome}.`,
+  link: { href: `/empresas/${e.id}`, texto: "Abrir cadastro" },
 });
 
 export async function criarEmpresa(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
@@ -126,10 +126,10 @@ export async function buscarCnpj(
   await exigirUsuario();
   if (!cnpjValido(cnpj)) return { ok: false, erro: "CNPJ inválido. Confira os números." };
   const existente = acharEmpresaDuplicada({ cnpj: cnpj.replace(/\D/g, ""), razaoSocial: "" }, empresaAtualId);
-  if (existente) return { ok: false, erro: `Essa empresa já está cadastrada como "${existente.nome}".`, existente };
+  if (existente) return { ok: false, erro: `Empresa já cadastrada: ${existente.nome}.`, existente };
   const r = await consultarCnpj(cnpj);
   if (r === "nao-encontrado") return { ok: false, erro: "CNPJ não encontrado na Receita." };
-  if (r === "indisponivel") return { ok: false, erro: "Não deu para consultar agora (sem internet ou serviço fora do ar). Preencha à mão." };
+  if (r === "indisponivel") return { ok: false, erro: "Não foi possível consultar o CNPJ agora." };
   return { ok: true, dados: r };
 }
 

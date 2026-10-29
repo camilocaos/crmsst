@@ -23,8 +23,8 @@ let urlServidor = null;
 // ---------- Atualização automática (GitHub Releases) ----------
 const VERIFICAR_A_CADA_MS = 2 * 60 * 60 * 1000; // a cada 2 horas, além de ao abrir
 /** Estado que a janelinha de atualização mostra. Fica aqui para sobreviver a recarregamentos da página. */
-let atualizacao = { etapa: "nenhuma" }; // nenhuma | disponivel | baixando | pronta | erro
-let dispensada = false; // "Agora não": some até o app ser aberto de novo
+let atualizacao = { etapa: "nenhuma" }; // nenhuma | baixando | pronta | erro
+let dispensada = false; // "Depois": some até o app ser aberto de novo
 
 function enviarAtualizacao() {
   janela?.webContents.send("crm:atualizacao", dispensada ? { etapa: "nenhuma" } : atualizacao);
@@ -44,7 +44,8 @@ function configurarAtualizador() {
   // Em desenvolvimento não há o que atualizar (a não ser num teste com CRM_UPDATE_URL)
   if (!app.isPackaged && !process.env.CRM_UPDATE_URL) return;
   const { autoUpdater } = require("electron-updater");
-  autoUpdater.autoDownload = false; // só baixa se a pessoa quiser
+  // Baixa sozinho em segundo plano, enquanto a pessoa usa o CRM; depois é só reiniciar.
+  autoUpdater.autoDownload = true;
   // Só instala quando a pessoa clica. Se baixou e fechou, o aviso volta pronto na próxima abertura.
   autoUpdater.autoInstallOnAppQuit = false;
   const modoTeste = Boolean(process.env.CRM_UPDATE_URL);
@@ -52,7 +53,8 @@ function configurarAtualizador() {
 
   autoUpdater.on("update-available", (info) => {
     if (atualizacao.etapa === "baixando" || atualizacao.etapa === "pronta") return;
-    atualizacao = { etapa: "disponivel", versao: info.version, notas: textoDasNotas(info.releaseNotes) };
+    // O download já começa sozinho (autoDownload)
+    atualizacao = { etapa: "baixando", versao: info.version, notas: textoDasNotas(info.releaseNotes), progresso: 0 };
     enviarAtualizacao();
   });
   autoUpdater.on("download-progress", (p) => {
@@ -60,13 +62,14 @@ function configurarAtualizador() {
     enviarAtualizacao();
   });
   autoUpdater.on("update-downloaded", (info) => {
-    atualizacao = { ...atualizacao, etapa: "pronta", versao: info.version, progresso: 100 };
+    const notas = atualizacao.notas || textoDasNotas(info.releaseNotes);
+    atualizacao = { ...atualizacao, etapa: "pronta", versao: info.version, notas, progresso: 100 };
     dispensada = false;
     enviarAtualizacao();
   });
   autoUpdater.on("error", (erro) => {
     console.error("Atualização:", erro?.message);
-    // Sem internet etc.: só mostra erro se a pessoa tinha pedido para baixar
+    // Sem internet ao procurar: fica quieto. Só avisa se o download tinha começado.
     if (atualizacao.etapa === "baixando") {
       atualizacao = { ...atualizacao, etapa: "erro", mensagem: "Não foi possível baixar a atualização. Tente de novo mais tarde." };
       enviarAtualizacao();
@@ -75,7 +78,7 @@ function configurarAtualizador() {
 
   ipcMain.handle("crm:atualizacao-estado", (evento) => (daJanela(evento) ? (dispensada ? { etapa: "nenhuma" } : atualizacao) : null));
   ipcMain.handle("crm:atualizacao-baixar", (evento) => {
-    if (!daJanela(evento) || (atualizacao.etapa !== "disponivel" && atualizacao.etapa !== "erro")) return;
+    if (!daJanela(evento) || atualizacao.etapa !== "erro") return; // "Tentar de novo"
     atualizacao = { ...atualizacao, etapa: "baixando", progresso: 0 };
     enviarAtualizacao();
     autoUpdater.downloadUpdate().catch(() => {});
@@ -97,11 +100,12 @@ function configurarAtualizador() {
     app.isQuitting = true;
     servidor?.kill();
     for (const w of BrowserWindow.getAllWindows()) w.destroy();
-    // silencioso (sem assistente) e abre o app de novo ao terminar
-    setImmediate(() => autoUpdater.quitAndInstall(true, true));
+    // Mostra só a barra de progresso do instalador (sem assistente) e abre o app de novo ao terminar
+    setImmediate(() => autoUpdater.quitAndInstall(false, true));
   });
 
-  const verificar = () => autoUpdater.checkForUpdates().catch(() => {});
+  // O download automático devolve uma promessa à parte; sem internet, só ignora
+  const verificar = () => autoUpdater.checkForUpdates().then((r) => r?.downloadPromise?.catch(() => {})).catch(() => {});
   setTimeout(verificar, 5000);
   setInterval(verificar, VERIFICAR_A_CADA_MS);
 }
@@ -129,6 +133,9 @@ async function iniciar() {
   registrarPonte();
   const splash = mostrarSplash();
 
+  // Tem versão nova? Atualiza já na tela de abertura (como o G HUB) e o app abre atualizado
+  if (await atualizarAoAbrir(splash)) return;
+
   try {
     const url = DEV_URL || (await subirServidor());
     urlServidor = url;
@@ -148,13 +155,78 @@ async function iniciar() {
 }
 
 function mostrarSplash() {
-  const splash = new BrowserWindow({ width: 360, height: 200, frame: false, resizable: false, show: true, icon: ICONE, backgroundColor: "#10334A" });
+  const splash = new BrowserWindow({ width: 420, height: 240, frame: false, resizable: false, show: true, icon: ICONE, backgroundColor: "#10334A" });
   const logo = `data:image/png;base64,${fs.readFileSync(ICONE).toString("base64")}`;
   const html = `<body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#10334A;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;font-size:14px">
     <img src="${logo}" width="56" height="56" alt="">
-    <p style="margin-top:16px;color:#C9D8E3">Abrindo o CRM...</p></body>`;
+    <p id="texto" style="margin:16px 0 0;color:#C9D8E3;text-align:center;padding:0 24px">Abrindo o CRM...</p>
+    <div id="barra" style="display:none;width:280px;margin-top:18px">
+      <div style="height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden"><div id="cheio" style="height:100%;width:0;background:#4FB3E8;transition:width .3s"></div></div>
+      <p id="pct" style="margin:6px 0 0;font-size:12px;color:#C9D8E3;text-align:right">0%</p>
+    </div></body>`;
   splash.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   return splash;
+}
+
+/** Troca o texto da tela de abertura e mostra a barra de progresso (progresso = null esconde a barra). */
+function atualizarSplash(splash, texto, progresso = null) {
+  if (splash.isDestroyed()) return;
+  const js = `(() => {
+    document.getElementById("texto").textContent = ${JSON.stringify(texto)};
+    const p = ${progresso === null ? "null" : Math.round(progresso)};
+    document.getElementById("barra").style.display = p === null ? "none" : "block";
+    if (p !== null) { document.getElementById("cheio").style.width = p + "%"; document.getElementById("pct").textContent = p + "%"; }
+  })()`;
+  const rodar = () => splash.webContents.executeJavaScript(js).catch(() => {});
+  if (splash.webContents.isLoading()) splash.webContents.once("did-finish-load", rodar);
+  else rodar();
+}
+
+/**
+ * Ao abrir o app: se tem versão nova, baixa e instala na própria tela de abertura.
+ * Sem internet ou se der erro, abre o CRM normalmente. Devolve true se está instalando.
+ */
+async function atualizarAoAbrir(splash) {
+  if (!app.isPackaged && !process.env.CRM_UPDATE_URL) return false;
+  const modoTeste = Boolean(process.env.CRM_UPDATE_URL);
+  let autoUpdater;
+  try {
+    ({ autoUpdater } = require("electron-updater"));
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = false;
+    if (modoTeste) autoUpdater.setFeedURL({ provider: "generic", url: process.env.CRM_UPDATE_URL });
+    const limite = new Promise((resolve) => setTimeout(() => resolve(null), 6000));
+    const r = await Promise.race([autoUpdater.checkForUpdates().catch(() => null), limite]);
+    if (!r?.isUpdateAvailable) return false;
+
+    const versao = r.updateInfo.version;
+    atualizarSplash(splash, `Aguarde enquanto atualizamos o CRM para a versão ${versao}...`, 0);
+    const progresso = (p) => atualizarSplash(splash, `Aguarde enquanto atualizamos o CRM para a versão ${versao}...`, p.percent);
+    autoUpdater.on("download-progress", progresso);
+    try {
+      await autoUpdater.downloadUpdate();
+    } finally {
+      autoUpdater.removeListener("download-progress", progresso);
+    }
+
+    if (modoTeste) {
+      atualizarSplash(splash, "Modo de teste: a instalação foi simulada. Abrindo o CRM...", 100);
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      atualizarSplash(splash, "Abrindo o CRM...");
+      return false;
+    }
+    atualizarSplash(splash, "Instalando...", 100);
+    app.isQuitting = true;
+    setTimeout(() => {
+      for (const w of BrowserWindow.getAllWindows()) w.destroy();
+      autoUpdater.quitAndInstall(false, true); // barra de progresso do instalador e abre o app de novo
+    }, 800);
+    return true;
+  } catch (erro) {
+    console.error("Atualização ao abrir:", erro?.message);
+    atualizarSplash(splash, "Abrindo o CRM...");
+    return false;
+  }
 }
 
 function portaLivre() {

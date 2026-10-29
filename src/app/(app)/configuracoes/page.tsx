@@ -58,7 +58,7 @@ function AbaEmpresa() {
     <Cartao>
       <Formulario acao={salvarEmpresa} mensagemSucesso="Configurações salvas.">
         <h2 className="text-sm font-semibold text-slate-800">Sua empresa</h2>
-        <p className="mb-4 text-xs text-slate-500">Esses dados aparecem no cabeçalho das propostas.</p>
+        <div className="mb-4" />
         <div className="grid gap-4 md:grid-cols-2">
           <Campo rotulo="Nome da empresa *" className="md:col-span-2">
             <input name="nomeEmpresa" required defaultValue={config.nomeEmpresa} className="campo" />
@@ -88,12 +88,9 @@ function AbaEmpresa() {
           <Campo rotulo="Condições de pagamento padrão" className="md:col-span-2">
             <textarea name="condicoesPagamento" rows={3} defaultValue={config.condicoesPagamento} className="campo" />
           </Campo>
-          <Campo rotulo="Margem sobre as medições (R$ por medição)">
+          <Campo rotulo="Margem sobre as medições (R$)">
             <input name="margemMedicoes" type="number" min={0} step="10" defaultValue={config.margemMedicoes} className="campo" />
           </Campo>
-          <p className="self-end pb-2 text-xs text-slate-500">
-            Somada ao custo do fornecedor em cada avaliação quantitativa. A taxa de deslocamento não tem margem.
-          </p>
         </div>
       </Formulario>
     </Cartao>
@@ -160,7 +157,7 @@ function AbaUsuarios({ meuId }: { meuId: number }) {
               {u.id !== meuId && (
                 <details className="mt-2">
                   <summary className="cursor-pointer text-xs font-medium text-marca-700">Redefinir senha</summary>
-                  <Formulario acao={redefinirSenha.bind(null, u.id)} textoBotao="Redefinir" limparAoSalvar mensagemSucesso="Senha redefinida. A pessoa vai precisar trocá-la ao entrar." className="mt-2">
+                  <Formulario acao={redefinirSenha.bind(null, u.id)} textoBotao="Redefinir" limparAoSalvar mensagemSucesso="Senha redefinida." className="mt-2">
                     <input name="senha" type="password" required minLength={6} placeholder="Senha provisória" className="campo max-w-xs" />
                   </Formulario>
                 </details>

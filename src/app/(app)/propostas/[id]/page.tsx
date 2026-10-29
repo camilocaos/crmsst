@@ -93,7 +93,7 @@ export default async function PropostaPage({ params }: PageProps<"/propostas/[id
         <BotaoLink href={`/propostas/${id}/editar`} variante="secundario">
           Editar
         </BotaoLink>
-        <BotaoConfirmar acao={excluirProposta.bind(null, id)} mensagem="Excluir esta proposta? Os contratos gerados dela também serão excluídos.">
+        <BotaoConfirmar acao={excluirProposta.bind(null, id)} mensagem="Excluir esta proposta e os contratos dela?">
           Excluir
         </BotaoConfirmar>
       </div>
@@ -187,7 +187,7 @@ export default async function PropostaPage({ params }: PageProps<"/propostas/[id
                 </button>
               </form>
             ) : proposta.status !== "aceita" ? (
-              <p className="text-xs text-slate-500">Quando a proposta for aceita, os contratos são gerados daqui: Segurança e/ou Saúde, conforme os serviços.</p>
+              <p className="text-xs text-slate-500">Disponível quando a proposta for aceita.</p>
             ) : null}
           </Cartao>
         </div>

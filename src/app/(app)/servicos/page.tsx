@@ -21,7 +21,6 @@ export default async function ServicosPage() {
     <>
       <Cabecalho
         titulo="Serviços"
-        subtitulo="Catálogo usado para montar propostas. Os preços são sugestões e podem ser ajustados em cada proposta."
       />
       <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
@@ -120,12 +119,11 @@ function CamposServico({ categorias, servico }: { categorias: string[]; servico?
         min={0}
         step="0.01"
         defaultValue={servico?.custo ?? ""}
-        placeholder="Custo do fornecedor (R$), se tiver"
-        title="Com custo, o preço vira custo + margem das medições (Configurações)"
+        placeholder="Custo do fornecedor (R$)"
         className="campo"
       />
       <div className="grid grid-cols-2 gap-3">
-        <select name="area" defaultValue={servico?.area ?? "seguranca"} className="campo" title="Define o contrato e o timbrado">
+        <select name="area" defaultValue={servico?.area ?? "seguranca"} className="campo">
           <option value="seguranca">Segurança do Trabalho</option>
           <option value="saude">Saúde Ocupacional</option>
         </select>

@@ -16,7 +16,7 @@ export default async function PrimeiroAcessoPage() {
   return (
     <TelaAcesso
       titulo="Bem-vindo ao CRM"
-      subtitulo="Este é o primeiro acesso neste computador. Crie o seu usuário de administrador: só você vai saber a senha."
+      subtitulo="Crie o usuário administrador."
     >
       <Formulario acao={criarPrimeiroAdmin} textoBotao="Criar acesso e entrar" larguraTotal>
         <div className="space-y-4">

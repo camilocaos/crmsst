@@ -28,6 +28,11 @@ fs.rmSync(path.join(standalone, "data"), { recursive: true, force: true });
 fs.rmSync(path.join(standalone, ".env"), { force: true });
 
 console.log("\n▶ 3/3 Gerando o instalador");
+if (process.argv.includes("--teste")) {
+  // Só o app aberto (sem instalador), para testar o atualizador com CRM_UPDATE_URL
+  rodar("npx electron-builder --win dir --x64 --publish never -c.directories.output=instalador-teste");
+  process.exit(0);
+}
 fs.rmSync(path.join(raiz, "instalador"), { recursive: true, force: true });
 rodar("npx electron-builder --win nsis --x64 --publish never");
 
@@ -49,7 +54,7 @@ fs.writeFileSync(
 2. Se aparecer "O Windows protegeu o computador", clique em
    "Mais informações" e depois em "Executar assim mesmo".
    (Isso acontece porque o app ainda não tem assinatura digital paga.)
-3. Siga o instalador. Ele cria o atalho "CRM SST" na Área de Trabalho
+3. O CRM instala sozinho e abre. O atalho "CRM SST" fica na Área de Trabalho
    e no menu Iniciar.
 
 Onde ficam os dados
@@ -66,8 +71,8 @@ feche o app e copie o arquivo crm.db para a pasta Documentos\\CRM SST do outro P
 
 Atualizações
 ------------
-Quando sair uma versão nova, o próprio app avisa com uma janelinha no canto
-da tela. Clique em "Atualizar" e depois em "Reiniciar e atualizar".
+Quando sair uma versão nova, o app baixa sozinho e avisa no meio da tela.
+Clique em "Reiniciar agora", ou em "Depois": aí atualiza na próxima vez que abrir.
 Os dados em Documentos\\CRM SST não são apagados, nem ao desinstalar.
 
 (Quem tem a versão 1.1.0 ou anterior precisa instalar esta versão manualmente

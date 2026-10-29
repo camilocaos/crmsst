@@ -58,13 +58,13 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
           <p className="-mt-2 mb-4 text-xs text-slate-500">
             Empresa, serviços e valores vêm da proposta aceita. Aqui ficam só as informações que o contrato precisa a mais. Salve e baixe de novo para atualizar o documento.
           </p>
-          <Formulario acao={salvarContrato.bind(null, id)} mensagemSucesso="Contrato salvo. Baixe o Word ou o PDF para ver a versão atualizada.">
+          <Formulario acao={salvarContrato.bind(null, id)} mensagemSucesso="Contrato salvo.">
             <div className="grid gap-4 md:grid-cols-2">
               {seguranca ? (
                 <Campo rotulo="Tipo de contrato">
                   <select name="tipo" defaultValue={c.tipo} className="campo">
-                    <option value="pontual">Pontual (serviço específico)</option>
-                    <option value="mensalista">Mensalista (escopo continuado)</option>
+                    <option value="pontual">Pontual</option>
+                    <option value="mensalista">Mensalista</option>
                   </select>
                 </Campo>
               ) : (
@@ -83,21 +83,21 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
               </Campo>
 
               {seguranca && (
-                <Campo rotulo="Valor mensal (só para mensalista)">
+                <Campo rotulo="Valor mensal">
                   <input name="valorMensal" type="number" min={0} step="0.01" defaultValue={c.valorMensal ?? ""} className="campo" />
                 </Campo>
               )}
-              <Campo rotulo={seguranca ? "Vigência (vazio = até concluir os serviços)" : "Vigência"}>
+              <Campo rotulo="Vigência">
                 <input name="vigencia" defaultValue={c.vigencia ?? ""} placeholder={seguranca ? "ex.: 12 (doze) meses" : "ex.: prazo indeterminado"} className="campo" />
               </Campo>
 
               <label className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700 md:col-span-2">
                 <input type="checkbox" name="formalizacaoPosterior" defaultChecked={c.formalizacaoPosterior} className="mt-1" />
                 <span>
-                  <span className="font-semibold">Formalização de serviço já executado.</span> O contrato passa a dizer que os serviços já foram realizados e não cria prazo futuro de execução.
+                  <span className="font-semibold">Serviço já executado</span>
                 </span>
               </label>
-              <Campo rotulo="Data em que o serviço foi executado (se já executado)">
+              <Campo rotulo="Data de execução">
                 <input name="dataExecucao" type="date" defaultValue={c.dataExecucao ?? ""} className="campo" />
               </Campo>
               <Campo rotulo="Data da assinatura">
@@ -132,7 +132,7 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
               <Campo rotulo="Testemunha 2 (nome e CPF)">
                 <input name="testemunha2" defaultValue={c.testemunha2 ?? ""} className="campo" />
               </Campo>
-              <Campo rotulo="Condições específicas (viram uma cláusula extra, se preenchido)" className="md:col-span-2">
+              <Campo rotulo="Condições específicas" className="md:col-span-2">
                 <textarea name="observacoes" rows={3} defaultValue={c.observacoes ?? ""} className="campo" />
               </Campo>
             </div>
@@ -166,7 +166,7 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
               {empresa.cnpj ? ` · ${formatarCnpj(empresa.cnpj)}` : ""}. Opcionais da proposta não entram no contrato.
             </p>
           </Cartao>
-          <BotaoConfirmar acao={excluirContrato.bind(null, id)} mensagem="Excluir este contrato? A proposta continua.">
+          <BotaoConfirmar acao={excluirContrato.bind(null, id)} mensagem="Excluir este contrato?">
             Excluir contrato
           </BotaoConfirmar>
         </div>

@@ -155,14 +155,13 @@ export function EditorProposta({
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
             <h3 className="border-l-4 border-[#8DC63F] pl-2 text-sm font-semibold text-marca-900">Serviços de Segurança do Trabalho</h3>
-            <p className="mt-0.5 pl-3 text-xs text-slate-500">Programas, laudos, treinamentos, eSocial e medições contratadas. Somam no total.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <SeletorServico
               servicos={servicosFixos}
               aoEscolher={adicionarServico}
               rotulo="+ Serviço do catálogo"
-              extra={servicosExames.length ? { grupo: "Saúde Ocupacional", rotulo: "Realização dos exames ocupacionais — tabela da clínica, por demanda", aoEscolher: adicionarTabelaClinica } : undefined}
+              extra={servicosExames.length ? { grupo: "Saúde Ocupacional", rotulo: "Realização dos exames ocupacionais", aoEscolher: adicionarTabelaClinica } : undefined}
             />
             <button
               type="button"
@@ -178,7 +177,7 @@ export function EditorProposta({
 
         {daSeguranca.length === 0 ? (
           <p className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
-            Nenhum serviço de Segurança. Adicione pelo catálogo acima.
+            Nenhum serviço adicionado.
           </p>
         ) : (
           <ul className="space-y-3">
@@ -206,7 +205,7 @@ export function EditorProposta({
                     rows={2}
                     value={i.detalhe ?? ""}
                     onChange={(e) => alterar(i.chave, { detalhe: e.target.value || null })}
-                    placeholder="O que é entregue (aparece na proposta e no contrato)"
+                    placeholder="Descrição do serviço"
                     className="campo text-xs"
                   />
                   <div className="space-y-2">
@@ -221,7 +220,7 @@ export function EditorProposta({
                         <input type="checkbox" checked={i.incluso} onChange={(e) => alterar(i.chave, { incluso: e.target.checked, opcional: e.target.checked ? false : i.opcional })} />
                         Incluso
                       </label>
-                      <label className="flex items-center gap-1.5" title="Fora do total, ex.: AET que depende do resultado da AEP">
+                      <label className="flex items-center gap-1.5" title="Não soma no total">
                         <input type="checkbox" checked={i.opcional} onChange={(e) => alterar(i.chave, { opcional: e.target.checked, incluso: e.target.checked ? false : i.incluso })} />
                         Opcional
                       </label>
@@ -253,7 +252,7 @@ export function EditorProposta({
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
             <h3 className="border-l-4 border-[#1FB5B8] pl-2 text-sm font-semibold text-marca-900">Realização dos exames ocupacionais (Saúde Ocupacional)</h3>
-            <p className="mt-0.5 pl-3 text-xs text-slate-500">Valor por exame realizado. Nunca entram no total, nem como pacote ou incluso.</p>
+            <p className="mt-0.5 pl-3 text-xs text-slate-500">Valor por exame.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <SeletorServico servicos={servicosExames} aoEscolher={(s) => adicionar([itemDoServico(s)])} rotulo="+ Exame" />
@@ -309,9 +308,9 @@ export function EditorProposta({
         </Campo>
         <label className="flex items-center gap-2 text-sm text-slate-700 md:col-span-2">
           <input type="checkbox" name="mostrarMedicoes" defaultChecked={inicial.mostrarMedicoes} />
-          Mostrar a tabela de referência das avaliações quantitativas (medições não contratadas)
+          Mostrar tabela de medições na proposta
         </label>
-        <Campo rotulo="Observações (aparecem na proposta)" className="md:col-span-2">
+        <Campo rotulo="Observações" className="md:col-span-2">
           <textarea name="observacoes" rows={3} defaultValue={inicial.observacoes ?? ""} className="campo" />
         </Campo>
       </div>

@@ -43,7 +43,11 @@ Sai em `instalador/`: o `CRM-SST-Setup-<versão>.exe`, um `LEIA-ME.txt` com inst
 
 ### Lançar uma versão nova (atualização automática)
 
-O app confere as Releases do GitHub ao abrir e a cada 2 horas. Quando acha uma versão nova, mostra uma janelinha no canto da tela com o que mudou, e os botões **Atualizar** e **Agora não**. A pessoa pode ignorar; o aviso volta na próxima vez que abrir o app. Ao atualizar, o app baixa em segundo plano, fecha, instala sem assistente e abre de novo.
+O app confere as Releases do GitHub ao abrir e a cada 2 horas.
+- **Com o app aberto:** a versão nova baixa em segundo plano e aparece uma janela no meio da tela com as atualizações e os botões **Reiniciar agora** e **Depois**.
+- **Ao abrir o app:** se houver versão nova, a tela de abertura baixa e instala na hora (com barra de progresso) e o CRM abre já atualizado. Sem internet, abre normalmente.
+
+A instalação usa a barra de progresso do próprio instalador (um clique, sem assistente).
 
 1. Aumente `version` em `desktop/package.json` (ex.: `1.2.0` → `1.3.0`).
 2. Escreva as novidades em `NOVIDADES.md` (é o texto de "Ver o que mudou").

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Nova empresa" };
 export default function NovaEmpresaPage() {
   return (
     <div className="max-w-3xl">
-      <Cabecalho titulo="Nova empresa" subtitulo="Cadastre um lead ou cliente." />
+      <Cabecalho titulo="Nova empresa" />
       <Cartao>
         <FormEmpresa acao={criarEmpresa} />
       </Cartao>

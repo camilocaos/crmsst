@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 
 type Estado =
   | { etapa: "nenhuma" }
-  | { etapa: "disponivel"; versao: string; notas?: string }
   | { etapa: "baixando"; versao: string; notas?: string; progresso?: number }
   | { etapa: "pronta"; versao: string; notas?: string }
-  | { etapa: "erro"; versao: string; mensagem?: string };
+  | { etapa: "erro"; versao: string; notas?: string; mensagem?: string };
 
 type PonteAtualizacao = {
   estado: () => Promise<Estado | null>;
@@ -21,11 +20,19 @@ const ponte = (): PonteAtualizacao | undefined =>
   (window as unknown as { crmDesktop?: { atualizacao?: PonteAtualizacao } }).crmDesktop?.atualizacao;
 
 const botao = "inline-flex min-h-10 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition";
+const primario = `${botao} bg-marca-600 text-white hover:bg-marca-700`;
+const secundario = `${botao} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`;
 
-/** Janelinha no canto da tela avisando que há versão nova do app desktop. */
+/**
+ * Aviso de versão nova do app desktop. Aparece no meio da tela: a atualização baixa
+ * sozinha enquanto a pessoa usa o CRM e, quando fica pronta, é só reiniciar.
+ * Dá para esconder (vira um botãozinho no canto) ou deixar para depois.
+ */
 export function AvisoAtualizacao() {
   const [estado, setEstado] = useState<Estado>({ etapa: "nenhuma" });
-  const [verNotas, setVerNotas] = useState(false);
+  // Janela minimizada no canto; volta a abrir sozinha quando a etapa muda
+  const [minimizadaEm, setMinimizadaEm] = useState<string | null>(null);
+  const [reiniciando, setReiniciando] = useState(false);
 
   useEffect(() => {
     const p = ponte();
@@ -36,87 +43,101 @@ export function AvisoAtualizacao() {
 
   if (estado.etapa === "nenhuma") return null;
 
-  const notas = "notas" in estado ? estado.notas?.trim() : "";
+  const notas = estado.notas?.trim();
+  const progresso = estado.etapa === "baixando" ? (estado.progresso ?? 0) : 100;
+
+  if (minimizadaEm === estado.etapa) {
+    return (
+      <button
+        onClick={() => setMinimizadaEm(null)}
+        className="nao-imprimir fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-marca-800 shadow-lg hover:bg-slate-50"
+      >
+        <IconeDownload />
+        {estado.etapa === "baixando" ? `Baixando a versão ${estado.versao}... ${progresso}%` : `Versão ${estado.versao}: ver atualização`}
+      </button>
+    );
+  }
+
+  function reiniciar() {
+    setReiniciando(true);
+    ponte()?.instalar();
+  }
 
   return (
-    <div
-      role="dialog"
-      aria-live="polite"
-      aria-label="Atualização do CRM"
-      className="nao-imprimir fixed bottom-4 right-4 z-50 w-[22rem] max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-4 shadow-lg"
-    >
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-marca-50 text-marca-700" aria-hidden>
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
-          </svg>
-        </span>
-        <div className="min-w-0 flex-1">
-          {estado.etapa === "disponivel" && (
-            <>
-              <p className="text-sm font-semibold text-marca-900">Nova versão disponível: {estado.versao}</p>
-              <p className="mt-0.5 text-xs text-slate-500">Atualize para receber as novidades do sistema. Seus dados continuam.</p>
-            </>
-          )}
+    <div className="nao-imprimir fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-[1px]">
+      <div role="dialog" aria-modal="true" aria-labelledby="titulo-atualizacao" className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-marca-50 text-marca-700" aria-hidden>
+            <IconeDownload grande />
+          </span>
+          <div>
+            <h2 id="titulo-atualizacao" className="text-base font-semibold text-marca-900">
+              {estado.etapa === "erro"
+                ? "Não deu para atualizar"
+                : estado.etapa === "pronta"
+                  ? `Versão ${estado.versao} pronta`
+                  : `Nova versão: ${estado.versao}`}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {estado.etapa === "baixando" && "Baixando..."}
+              {estado.etapa === "pronta" && reiniciando && "Reiniciando..."}
+              {estado.etapa === "erro" && estado.mensagem}
+            </p>
+          </div>
+        </div>
+
+        {estado.etapa !== "erro" && (
+          <div className="mt-5">
+            <div className="h-2.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={progresso} aria-valuemin={0} aria-valuemax={100}>
+              <div className={`h-full rounded-full transition-all ${estado.etapa === "pronta" ? "bg-sucesso" : "bg-marca-600"}`} style={{ width: `${progresso}%` }} />
+            </div>
+            {estado.etapa === "baixando" && <p className="mt-1 text-right text-xs tabular-nums text-slate-500">{progresso}%</p>}
+          </div>
+        )}
+
+        {notas && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Atualizações - versão {estado.versao}</p>
+            <p className="mt-1 max-h-48 overflow-y-auto whitespace-pre-line rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{notas}</p>
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
           {estado.etapa === "baixando" && (
-            <>
-              <p className="text-sm font-semibold text-marca-900">Baixando a versão {estado.versao}...</p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={estado.progresso ?? 0} aria-valuemin={0} aria-valuemax={100}>
-                <div className="h-full rounded-full bg-marca-600 transition-all" style={{ width: `${estado.progresso ?? 0}%` }} />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">{estado.progresso ?? 0}% · pode continuar usando o CRM</p>
-            </>
+            <button onClick={() => setMinimizadaEm("baixando")} className={primario}>
+              Continuar usando
+            </button>
           )}
           {estado.etapa === "pronta" && (
             <>
-              <p className="text-sm font-semibold text-marca-900">Versão {estado.versao} pronta</p>
-              <p className="mt-0.5 text-xs text-slate-500">
-                Clique em reiniciar: o CRM fecha, atualiza sozinho em alguns segundos e abre de novo.
-              </p>
+              <button onClick={() => ponte()?.dispensar()} disabled={reiniciando} className={secundario}>
+                Depois
+              </button>
+              <button onClick={reiniciar} disabled={reiniciando} className={primario}>
+                {reiniciando ? "Reiniciando..." : "Reiniciar agora"}
+              </button>
             </>
           )}
           {estado.etapa === "erro" && (
             <>
-              <p className="text-sm font-semibold text-erro">Não deu para atualizar</p>
-              <p className="mt-0.5 text-xs text-slate-500">{estado.mensagem}</p>
-            </>
-          )}
-
-          {notas && estado.etapa !== "baixando" && (
-            <div className="mt-2">
-              <button onClick={() => setVerNotas((v) => !v)} className="text-xs font-semibold text-marca-700 hover:underline">
-                {verNotas ? "Esconder novidades" : "Ver o que mudou"}
-              </button>
-              {verNotas && (
-                <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-line rounded-lg bg-slate-50 p-2 text-xs text-slate-700">
-                  {notas}
-                </p>
-              )}
-            </div>
-          )}
-
-          {estado.etapa !== "baixando" && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(estado.etapa === "disponivel" || estado.etapa === "erro") && (
-                <button onClick={() => ponte()?.baixar()} className={`${botao} bg-marca-600 text-white hover:bg-marca-700`}>
-                  {estado.etapa === "erro" ? "Tentar de novo" : "Atualizar"}
-                </button>
-              )}
-              {estado.etapa === "pronta" && (
-                <button onClick={() => ponte()?.instalar()} className={`${botao} bg-marca-600 text-white hover:bg-marca-700`}>
-                  Reiniciar e atualizar
-                </button>
-              )}
-              <button
-                onClick={() => ponte()?.dispensar()}
-                className={`${botao} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}
-              >
+              <button onClick={() => ponte()?.dispensar()} className={secundario}>
                 Agora não
               </button>
-            </div>
+              <button onClick={() => ponte()?.baixar()} className={primario}>
+                Tentar de novo
+              </button>
+            </>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function IconeDownload({ grande = false }: { grande?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={grande ? "h-6 w-6" : "h-4 w-4"} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+    </svg>
   );
 }

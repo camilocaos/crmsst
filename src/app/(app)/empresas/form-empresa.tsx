@@ -17,7 +17,7 @@ export function FormEmpresa({
     <Formulario acao={acao} textoBotao={empresa ? "Salvar alterações" : "Cadastrar empresa"}>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2 md:max-w-md">
-          <span className="rotulo">CNPJ · digite e os dados da Receita são preenchidos sozinhos</span>
+          <span className="rotulo">CNPJ</span>
           <CampoCnpj valorInicial={formatarCnpj(empresa?.cnpj)} empresaId={empresa?.id} />
         </div>
         <Campo rotulo="Razão social *">

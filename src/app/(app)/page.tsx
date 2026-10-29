@@ -247,7 +247,7 @@ export default async function DashboardPage() {
         <Cartao>
           <TituloCartao>Fechamentos previstos (30 dias)</TituloCartao>
           {fechandoLogo.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhuma oportunidade em proposta/negociação com previsão para os próximos 30 dias.</p>
+            <p className="text-sm text-slate-500">Nenhum fechamento previsto para os próximos 30 dias.</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {fechandoLogo.map((o) => (

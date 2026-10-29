@@ -75,7 +75,7 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
             </BotaoLink>
             <BotaoConfirmar
               acao={excluirEmpresa.bind(null, id)}
-              mensagem="Excluir esta empresa e tudo ligado a ela (contatos, oportunidades, tarefas, propostas)?"
+              mensagem="Excluir esta empresa e todos os dados dela?"
             >
               Excluir
             </BotaoConfirmar>
@@ -206,7 +206,7 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
                 name="texto"
                 rows={2}
                 required
-                placeholder="Ex.: Liguei para o RH, pediram proposta de PGR + PCMSO até sexta."
+                placeholder="Nova anotação"
                 className="campo"
               />
             </Formulario>

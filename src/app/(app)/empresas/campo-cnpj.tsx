@@ -59,17 +59,12 @@ export function CampoCnpj({ valorInicial, empresaId }: { valorInicial: string; e
       preencher("cidade", d.cidade, "cidade");
       preencher("uf", d.uf, "UF");
 
-      const situacao = d.situacao && d.situacao.toUpperCase() !== "ATIVA" ? ` Atenção: situação na Receita "${d.situacao}".` : "";
-      setAviso({
-        tipo: situacao ? "alerta" : "ok",
-        texto:
-          (preenchidos.length
-            ? `Preenchido pela Receita: ${preenchidos.join(", ")}.`
-            : "Dados encontrados, mas os campos já estavam preenchidos.") +
-          (d.cnaeDescricao ? ` Atividade: ${d.cnaeDescricao}.` : "") +
-          (d.grauRisco ? ` Grau de risco ${d.grauRisco} pela NR-04 (atividade principal).` : "") +
-          situacao,
-      });
+      const inativa = d.situacao && d.situacao.toUpperCase() !== "ATIVA";
+      setAviso(
+        inativa
+          ? { tipo: "alerta", texto: `Situação na Receita: ${d.situacao}.` }
+          : { tipo: "ok", texto: preenchidos.length ? "Dados da Receita preenchidos." : "CNPJ encontrado." },
+      );
     });
   }
 
@@ -111,7 +106,7 @@ export function CampoCnpj({ valorInicial, empresaId }: { valorInicial: string; e
             <>
               {" "}
               <Link href={aviso.link} className="font-semibold underline">
-                Abrir o cadastro existente
+                Abrir cadastro
               </Link>
             </>
           )}

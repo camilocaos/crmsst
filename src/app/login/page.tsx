@@ -14,7 +14,7 @@ export default async function LoginPage() {
   if (semUsuarios()) redirect("/primeiro-acesso");
   if (await usuarioAtual()) redirect("/");
   return (
-    <TelaAcesso titulo="Entrar" subtitulo="Use seu usuário e senha para acessar o CRM.">
+    <TelaAcesso titulo="Entrar">
       <Formulario acao={entrar} textoBotao="Entrar" larguraTotal>
         <div className="space-y-4">
           <Campo rotulo="Usuário">
