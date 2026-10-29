@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { contratos, empresas, propostaItens, propostas, type Area } from "@/db/schema";
 import { checkbox, lerForm, numeroOpcional, textoOpcional, type EstadoForm } from "@/lib/form";
 import { exigirUsuario } from "@/lib/sessao";
+import { textoPagamento } from "@/lib/pagamento";
 
 /**
  * Cria os contratos de uma proposta aceita: um da Segurança (programas, laudos, treinamentos...)
@@ -61,6 +62,9 @@ const contratoSchema = z.object({
   dataExecucao: textoOpcional,
   valorMensal: numeroOpcional,
   vigencia: textoOpcional,
+  pagamento: z.enum(["pix", "boleto_vista", "boleto_parcelado", "outro"]).nullish().transform((v) => v ?? null),
+  parcelas: numeroOpcional,
+  vencimentoData: textoOpcional,
   formaPagamento: textoOpcional,
   vencimento: textoOpcional,
   pagamentosRealizados: textoOpcional,
@@ -81,9 +85,27 @@ export async function salvarContrato(id: number, _: EstadoForm, formData: FormDa
   if (!atual) return { erro: "Contrato não encontrado." };
   const d = r.dados;
   if (atual.area === "seguranca" && d.tipo === "mensalista" && !d.valorMensal) return { erro: "Informe o valor mensal do contrato mensalista." };
+  if (atual.area === "saude") {
+    // Exames são por demanda, contínuos
+    d.formalizacaoPosterior = false;
+    d.pagamentosRealizados = null;
+  }
   if (d.formalizacaoPosterior === false) d.dataExecucao = null;
+  if (d.pagamento === "boleto_parcelado" && (!d.parcelas || d.parcelas < 2 || !d.vencimentoData)) {
+    return { erro: "Informe as parcelas e o 1º vencimento." };
+  }
+  const parcelas = d.pagamento === "boleto_parcelado" ? Math.trunc(d.parcelas ?? 0) : null;
+  const vencimentoData = d.pagamento && d.pagamento !== "outro" ? d.vencimentoData : null;
+  const texto = textoPagamento({ ...d, parcelas, vencimentoData });
   db.update(contratos)
-    .set({ ...d, tipo: atual.area === "saude" ? "pontual" : d.tipo, valorMensal: d.tipo === "mensalista" ? d.valorMensal : null })
+    .set({
+      ...d,
+      ...texto,
+      parcelas,
+      vencimentoData,
+      tipo: atual.area === "saude" ? "pontual" : d.tipo,
+      valorMensal: d.tipo === "mensalista" ? d.valorMensal : null,
+    })
     .where(eq(contratos.id, id))
     .run();
   revalidatePath("/contratos");

@@ -9,6 +9,8 @@ import { formatarCnpj, formatarMoeda } from "@/lib/formato";
 import { calcularTotais, numeroProposta } from "@/lib/propostas";
 import { CONTRATADAS } from "@/lib/documentos/contrato";
 import { excluirContrato, salvarContrato } from "../actions";
+import { CamposPagamento } from "./campos-pagamento";
+import { pagamentoInicial } from "@/lib/pagamento";
 import { carregarContrato } from "../carregar";
 
 export const metadata: Metadata = { title: "Contrato" };
@@ -55,9 +57,6 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <Cartao>
           <TituloCartao>Dados do contrato</TituloCartao>
-          <p className="-mt-2 mb-4 text-xs text-slate-500">
-            Empresa, serviços e valores vêm da proposta aceita. Aqui ficam só as informações que o contrato precisa a mais. Salve e baixe de novo para atualizar o documento.
-          </p>
           <Formulario acao={salvarContrato.bind(null, id)} mensagemSucesso="Contrato salvo.">
             <div className="grid gap-4 md:grid-cols-2">
               {seguranca ? (
@@ -91,34 +90,42 @@ export default async function ContratoPage({ params }: PageProps<"/contratos/[id
                 <input name="vigencia" defaultValue={c.vigencia ?? ""} placeholder={seguranca ? "ex.: 12 (doze) meses" : "ex.: prazo indeterminado"} className="campo" />
               </Campo>
 
-              <label className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700 md:col-span-2">
-                <input type="checkbox" name="formalizacaoPosterior" defaultChecked={c.formalizacaoPosterior} className="mt-1" />
-                <span>
-                  <span className="font-semibold">Serviço já executado</span>
-                </span>
-              </label>
-              <Campo rotulo="Data de execução">
-                <input name="dataExecucao" type="date" defaultValue={c.dataExecucao ?? ""} className="campo" />
-              </Campo>
+              {/* Exames são contínuos, por demanda: não existe "serviço já executado" */}
+              {seguranca && (
+                <>
+                  <label className="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700 md:col-span-2">
+                    <input type="checkbox" name="formalizacaoPosterior" defaultChecked={c.formalizacaoPosterior} className="mt-1" />
+                    <span className="font-semibold">Serviço já executado</span>
+                  </label>
+                  <Campo rotulo="Data de execução">
+                    <input name="dataExecucao" type="date" defaultValue={c.dataExecucao ?? ""} className="campo" />
+                  </Campo>
+                </>
+              )}
               <Campo rotulo="Data da assinatura">
                 <input name="dataAssinatura" type="date" defaultValue={c.dataAssinatura ?? ""} className="campo" />
               </Campo>
 
-              <Campo rotulo="Forma de pagamento">
-                <input name="formaPagamento" defaultValue={c.formaPagamento ?? ""} placeholder="ex.: Pix, à vista, após a assinatura" className="campo" />
-              </Campo>
-              <Campo rotulo="Vencimento / parcelas">
-                <input name="vencimento" defaultValue={c.vencimento ?? ""} placeholder="ex.: 50% na assinatura e 50% até 05/11/2026" className="campo" />
-              </Campo>
-              <Campo rotulo="Pagamentos já realizados (um por linha)" className="md:col-span-2">
-                <textarea
-                  name="pagamentosRealizados"
-                  rows={3}
-                  defaultValue={c.pagamentosRealizados ?? ""}
-                  placeholder={"ex.: 18/10/2026 - R$ 500,00 via Pix - primeira parcela dos programas"}
-                  className="campo"
-                />
-              </Campo>
+              <CamposPagamento
+                inicial={{
+                  pagamento: pagamentoInicial(c),
+                  parcelas: c.parcelas,
+                  vencimentoData: c.vencimentoData,
+                  formaPagamento: c.formaPagamento,
+                  vencimento: c.vencimento,
+                }}
+              />
+              {seguranca && (
+                <Campo rotulo="Pagamentos já realizados (um por linha)" className="md:col-span-2">
+                  <textarea
+                    name="pagamentosRealizados"
+                    rows={3}
+                    defaultValue={c.pagamentosRealizados ?? ""}
+                    placeholder="18/10/2026 - R$ 500,00 - Pix"
+                    className="campo"
+                  />
+                </Campo>
+              )}
 
               <Campo rotulo="Endereço completo do cliente" className="md:col-span-2">
                 <input name="enderecoCliente" defaultValue={c.enderecoCliente ?? ""} className="campo" />

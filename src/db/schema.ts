@@ -176,6 +176,11 @@ export const contratos = sqliteTable("contratos", {
   vigencia: text("vigencia"),
   formaPagamento: text("forma_pagamento"),
   vencimento: text("vencimento"),
+  /** Opção marcada na tela; formaPagamento e vencimento (texto do contrato) saem dela. */
+  pagamento: text("pagamento", { enum: ["pix", "boleto_vista", "boleto_parcelado", "outro"] }),
+  parcelas: integer("parcelas"),
+  /** Vencimento único ou da 1ª parcela (AAAA-MM-DD). */
+  vencimentoData: text("vencimento_data"),
   /** Pagamentos já feitos (um por linha), para abater e registrar no contrato. */
   pagamentosRealizados: text("pagamentos_realizados"),
   enderecoCliente: text("endereco_cliente"),
