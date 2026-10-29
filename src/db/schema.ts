@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const criadoEm = () =>
   text("criado_em").notNull().default(sql`(datetime('now', 'localtime'))`);
@@ -26,7 +26,10 @@ export const empresas = sqliteTable("empresas", {
     .default("lead"),
   observacoes: text("observacoes"),
   criadoEm: criadoEm(),
-});
+},
+  // Uma empresa só: o mesmo CNPJ não pode ter dois cadastros.
+  (t) => [uniqueIndex("empresas_cnpj_unico").on(t.cnpj).where(sql`cnpj is not null`)],
+);
 
 export const contatos = sqliteTable("contatos", {
   id: integer("id").primaryKey({ autoIncrement: true }),

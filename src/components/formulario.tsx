@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import type { EstadoForm } from "@/lib/form";
@@ -42,7 +43,17 @@ export function Formulario({
     <form ref={ref} action={formAction} className={className}>
       {children}
       {estado?.erro && (
-        <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{estado.erro}</p>
+        <p role="alert" className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          {estado.erro}
+          {estado.link && (
+            <>
+              {" "}
+              <Link href={estado.link.href} className="font-semibold underline">
+                {estado.link.texto}
+              </Link>
+            </>
+          )}
+        </p>
       )}
       {estado?.ok && mensagemSucesso && (
         <p role="status" className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{mensagemSucesso}</p>

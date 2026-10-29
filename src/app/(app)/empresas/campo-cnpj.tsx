@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import { buscarCnpj } from "./actions";
 
-type Aviso = { tipo: "ok" | "alerta" | "erro"; texto: string } | null;
+type Aviso = { tipo: "ok" | "alerta" | "erro"; texto: string; link?: string } | null;
 
 function mascara(valor: string) {
   const n = valor.replace(/\D/g, "").slice(0, 14);
@@ -18,7 +19,7 @@ function mascara(valor: string) {
  * Campo de CNPJ que consulta a Receita e preenche os outros campos do formulário.
  * Só preenche campos vazios, para não apagar o que a pessoa já digitou.
  */
-export function CampoCnpj({ valorInicial }: { valorInicial: string }) {
+export function CampoCnpj({ valorInicial, empresaId }: { valorInicial: string; empresaId?: number }) {
   const [valor, setValor] = useState(valorInicial);
   const [aviso, setAviso] = useState<Aviso>(null);
   const [buscando, iniciar] = useTransition();
@@ -31,9 +32,9 @@ export function CampoCnpj({ valorInicial }: { valorInicial: string }) {
     ultimaBusca.current = n;
     setAviso(null);
     iniciar(async () => {
-      const r = await buscarCnpj(n);
+      const r = await buscarCnpj(n, empresaId);
       if (!r.ok) {
-        setAviso({ tipo: "erro", texto: r.erro });
+        setAviso({ tipo: "erro", texto: r.erro, link: r.existente && `/empresas/${r.existente.id}` });
         return;
       }
       const form = ref.current?.form;
@@ -106,6 +107,14 @@ export function CampoCnpj({ valorInicial }: { valorInicial: string }) {
           }`}
         >
           {aviso.texto}
+          {aviso.link && (
+            <>
+              {" "}
+              <Link href={aviso.link} className="font-semibold underline">
+                Abrir o cadastro existente
+              </Link>
+            </>
+          )}
         </p>
       )}
     </div>

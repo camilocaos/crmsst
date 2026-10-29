@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export type EstadoForm = { erro?: string; ok?: boolean } | undefined;
+/** `link` aparece junto do erro (ex.: abrir o cadastro que já existe). */
+export type EstadoForm = { erro?: string; ok?: boolean; link?: { href: string; texto: string } } | undefined;
 
 /** Converte FormData em objeto, trocando "" por null, e valida com zod. */
 export function lerForm<T extends z.ZodType>(
