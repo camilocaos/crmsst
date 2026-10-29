@@ -10,7 +10,8 @@ const ITENS = [
   { href: "/empresas", nome: "Empresas", icone: "M4 21V5a2 2 0 012-2h8a2 2 0 012 2v16M16 9h2a2 2 0 012 2v10M8 7h4M8 11h4M8 15h4M2 21h20" },
   { href: "/tarefas", nome: "Tarefas", icone: "M9 11l3 3 8-8M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h11" },
   { href: "/propostas", nome: "Propostas", icone: "M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6zM14 3v6h6M8 13h8M8 17h5" },
-  { href: "/servicos", nome: "Serviços SST", icone: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z" },
+  { href: "/contratos", nome: "Contratos", icone: "M9 12h6M9 16h6M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zM14 3v5h5" },
+  { href: "/servicos", nome: "Serviços", icone: "M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z" },
 ];
 
 const ICONE_ENGRENAGEM =

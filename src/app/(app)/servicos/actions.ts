@@ -15,6 +15,8 @@ const servicoSchema = z.object({
   precoBase: numeroOpcional.transform((v) => v ?? 0),
   unidade: textoOpcional.transform((v) => v ?? "por empresa"),
   ativo: checkbox,
+  area: z.enum(["seguranca", "saude"]).default("seguranca"),
+  cobranca: z.enum(["fixo", "por_demanda"]).default("fixo"),
 });
 
 export async function criarServico(_: EstadoForm, formData: FormData): Promise<EstadoForm> {

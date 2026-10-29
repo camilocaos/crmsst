@@ -20,7 +20,7 @@ export default async function ServicosPage() {
   return (
     <>
       <Cabecalho
-        titulo="Serviços SST"
+        titulo="Serviços"
         subtitulo="Catálogo usado para montar propostas. Os preços são sugestões e podem ser ajustados em cada proposta."
       />
       <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
@@ -61,6 +61,7 @@ function ItemServico({ servico: s, categorias }: { servico: Servico; categorias:
           <div className="shrink-0 text-right">
             <p className="text-sm font-semibold tabular-nums">{formatarMoeda(s.precoBase)}</p>
             <p className="text-xs text-slate-500">{s.unidade}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{s.area === "saude" ? "Saúde" : "Segurança"}{s.cobranca === "por_demanda" ? " · por demanda" : ""}</p>
             {!s.ativo && <Selo classe="bg-slate-100 text-slate-600">inativo</Selo>}
           </div>
         </summary>
@@ -110,6 +111,16 @@ function CamposServico({ categorias, servico }: { categorias: string[]; servico?
           {UNIDADES.map((u) => (
             <option key={u}>{u}</option>
           ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <select name="area" defaultValue={servico?.area ?? "seguranca"} className="campo" title="Define o contrato e o timbrado">
+          <option value="seguranca">Segurança do Trabalho</option>
+          <option value="saude">Saúde Ocupacional</option>
+        </select>
+        <select name="cobranca" defaultValue={servico?.cobranca ?? "fixo"} className="campo">
+          <option value="fixo">Valor fixo (soma no total)</option>
+          <option value="por_demanda">Por demanda (exame)</option>
         </select>
       </div>
     </div>
