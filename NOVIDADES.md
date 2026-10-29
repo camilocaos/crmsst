@@ -1,6 +1,1 @@
-- Atualização automática: baixa sozinha e, ao abrir o CRM, já instala
-- Propostas: opção "Realização dos exames ocupacionais" no catálogo
-- Medições ambientais com valores atualizados e taxa de deslocamento
-- Margem das medições em Configurações
-- Preços de PGR, PCMSO, LIP e NR-05 corrigidos
-- Empresa duplicada bloqueada pelo CNPJ
+- Contratos: botão "Novo contrato" e "Gerar contrato" na proposta aceita e na empresa
