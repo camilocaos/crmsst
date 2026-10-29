@@ -1,2 +1,6 @@
-- **Uma empresa só por CNPJ:** não dá mais para cadastrar a mesma empresa duas vezes. Ao digitar um CNPJ que já existe, aparece o aviso na hora com o link "Abrir o cadastro existente". Sem CNPJ, a razão social igual também é barrada.
-- **Duplicados juntados:** empresas que já estavam cadastradas em dobro viraram um cadastro só (o mais antigo). Contatos, histórico, oportunidades, tarefas e propostas foram para ele, e os campos vazios foram completados com os dados do outro (ex.: grau de risco).
+- Atualização automática: baixa sozinha e, ao abrir o CRM, já instala
+- Propostas: opção "Realização dos exames ocupacionais" no catálogo
+- Medições ambientais com valores atualizados e taxa de deslocamento
+- Margem das medições em Configurações
+- Preços de PGR, PCMSO, LIP e NR-05 corrigidos
+- Empresa duplicada bloqueada pelo CNPJ
