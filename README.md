@@ -10,7 +10,9 @@ Feito com **Next.js 16**, **React 19**, **Tailwind CSS 4** e **SQLite** (better-
 - **Funil de vendas (Kanban)** — arraste oportunidades entre as etapas (Prospecção → Qualificação → Visita técnica → Proposta → Negociação → Ganho/Perdido). Mostra total por etapa e valor ponderado pela probabilidade. Ao ganhar, a empresa vira cliente automaticamente.
 - **Tarefas e follow-ups** — ligações, WhatsApp, visitas, com vencimento e prioridade, agrupadas em atrasadas / hoje / próximos dias. Botão de adiar 1 dia.
 - **Catálogo de serviços SST** — PGR, PCMSO, LTCAT, AET, ASO, eSocial, treinamentos de NRs e mais, com preço base e unidade (por empresa, por funcionário, por turma...).
-- **Propostas** — monte com itens do catálogo, ajuste quantidades e desconto, imprima ou salve em PDF, envie pelo WhatsApp. Marcar como *enviada* ou *aceita* atualiza a oportunidade no funil.
+- **Propostas** — modelo do Grupo CUIDI em Word e PDF (`src/lib/documentos/proposta.ts`). Serviços de Segurança com natureza, período, incluso e opcional; exames sempre por demanda (valor por exame, nunca somam no total). Marcar como *enviada* ou *aceita* atualiza a oportunidade no funil.
+- **Contratos** — gerados da proposta aceita, um por unidade: CUIDI Segurança do Trabalho (CUID Serviços, 53.912.054/0001-90) e/ou CUIDI Saúde Ocupacional (63.819.592/0001-98), cada um com seu timbrado (`src/lib/documentos/contrato.ts`). Só entra o que foi contratado; pontual, mensalista ou formalização de serviço já executado.
+- **Grau de risco** — preenchido pelo CNAE com a tabela do Anexo I da NR-04 (`src/lib/grau-risco.ts`).
 - **Dashboard** — vendido no mês x meta, funil em aberto, conversão, vendas dos últimos 6 meses, tarefas do dia e propostas aguardando resposta.
 - **Login** — acesso com usuário e senha (senhas guardadas com scrypt, nunca em texto). Vários usuários por computador.
 - **Configurações** (engrenagem no canto do menu) — dados da sua empresa que saem nas propostas, meta mensal, validade e condições padrão, seu perfil e senha, e cadastro de usuários.
@@ -118,6 +120,7 @@ drizzle/          migrations do banco
 desktop/          processo principal do app Windows (Electron)
 build/            ícone do app (gerado)
 marca/            identidade visual: ícone original, paleta e especificação
+documentos/midia/ timbrados (Grupo, Segurança, Saúde) e logos usados nos documentos gerados
 scripts/          dados de demonstração, empacotamento e utilitários
 ```
 
