@@ -50,6 +50,7 @@ export function CampoCnpj({ valorInicial }: { valorInicial: string }) {
       preencher("razaoSocial", d.razaoSocial, "razão social");
       preencher("nomeFantasia", d.nomeFantasia, "nome fantasia");
       preencher("cnae", d.cnae, "CNAE");
+      preencher("grauRisco", d.grauRisco ? String(d.grauRisco) : "", "grau de risco");
       preencher("segmento", d.segmento, "segmento");
       preencher("telefone", d.telefone, "telefone");
       preencher("email", d.email, "e-mail");
@@ -65,6 +66,7 @@ export function CampoCnpj({ valorInicial }: { valorInicial: string }) {
             ? `Preenchido pela Receita: ${preenchidos.join(", ")}.`
             : "Dados encontrados, mas os campos já estavam preenchidos.") +
           (d.cnaeDescricao ? ` Atividade: ${d.cnaeDescricao}.` : "") +
+          (d.grauRisco ? ` Grau de risco ${d.grauRisco} pela NR-04 (atividade principal).` : "") +
           situacao,
       });
     });

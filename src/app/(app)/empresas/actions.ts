@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { exigirUsuario } from "@/lib/sessao";
 import { cnpjValido, consultarCnpj, type DadosCnpj } from "@/lib/cnpj";
+import { grauRiscoPorCnae } from "@/lib/grau-risco";
 import { contatos, empresas, notas } from "@/db/schema";
 import { checkbox, idOpcional, lerForm, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 
@@ -26,7 +27,9 @@ const empresaSchema = z.object({
   origem: textoOpcional,
   status: z.enum(["lead", "cliente", "inativo"]).default("lead"),
   observacoes: textoOpcional,
-});
+})
+  // Sem grau de risco informado, usa o da NR-04 pelo CNAE (escolha manual sempre prevalece)
+  .transform((d) => ({ ...d, grauRisco: d.grauRisco ?? grauRiscoPorCnae(d.cnae) }));
 
 export async function criarEmpresa(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
   await exigirUsuario();

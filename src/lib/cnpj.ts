@@ -1,4 +1,5 @@
 import "server-only";
+import { grauRiscoPorCnae } from "./grau-risco";
 
 /** Dados públicos da Receita Federal já no formato do cadastro de empresas. */
 export type DadosCnpj = {
@@ -6,6 +7,8 @@ export type DadosCnpj = {
   nomeFantasia: string;
   cnae: string;
   cnaeDescricao: string;
+  /** Grau de risco da NR-04 (Anexo I) pela atividade principal. */
+  grauRisco: number | null;
   segmento: string;
   telefone: string;
   email: string;
@@ -97,6 +100,7 @@ function converter(r: RespostaReceita): DadosCnpj {
     nomeFantasia: (r.nome_fantasia ?? "").trim(),
     cnae,
     cnaeDescricao: r.cnae_fiscal_descricao ?? "",
+    grauRisco: grauRiscoPorCnae(cnae),
     segmento: segmentoPorCnae(cnaeNum),
     telefone: formatarTelefone(r.ddd_telefone_1 ?? ""),
     email: (r.email ?? "").toLowerCase(),
