@@ -48,6 +48,8 @@ export default async function NovaPropostaPage({ searchParams }: PageProps<"/pro
               validade: somarDias(hoje(), config.validadePropostaDias),
               desconto: 0,
               condicoesPagamento: config.condicoesPagamento,
+              prazoEntrega: "até 15 dias úteis após o recebimento completo das informações e a realização do levantamento técnico",
+              mostrarMedicoes: true,
               observacoes: null,
               itens: [],
             }}

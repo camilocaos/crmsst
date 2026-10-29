@@ -43,7 +43,19 @@ export const STATUS_PROPOSTA = {
   recusada: { nome: "Recusada", classe: "bg-rose-100 text-rose-800" },
 } as const;
 
-export const ORIGENS = ["Indicação", "Site", "Instagram", "WhatsApp", "Google", "Prospecção ativa", "Evento", "Outro"];
+export const STATUS_CONTRATO = {
+  rascunho: { nome: "Rascunho", classe: "bg-slate-100 text-slate-700" },
+  enviado: { nome: "Enviado", classe: "bg-sky-100 text-sky-800" },
+  assinado: { nome: "Assinado", classe: "bg-emerald-100 text-emerald-800" },
+  cancelado: { nome: "Cancelado", classe: "bg-rose-100 text-rose-800" },
+} as const;
+
+export const AREAS = {
+  seguranca: { nome: "Segurança do Trabalho", curto: "Segurança", classe: "bg-[#EAF4DC] text-[#3F6212]" },
+  saude: { nome: "Saúde Ocupacional", curto: "Saúde", classe: "bg-[#E1F4F5] text-[#0E6E70]" },
+} as const;
+
+export const ORIGENS =["Indicação", "Site", "Instagram", "WhatsApp", "Google", "Prospecção ativa", "Evento", "Outro"];
 
 export const SEGMENTOS = [
   "Construção civil",

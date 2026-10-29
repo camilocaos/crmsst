@@ -19,10 +19,13 @@ export function opcoesEditor() {
         precoBase: servicos.precoBase,
         unidade: servicos.unidade,
         descricao: servicos.descricao,
+        area: servicos.area,
+        cobranca: servicos.cobranca,
       })
       .from(servicos)
       .where(eq(servicos.ativo, true))
-      .orderBy(asc(servicos.categoria), asc(servicos.nome))
+      // na ordem em que entraram no catálogo (a mesma da tabela da clínica: combos por último)
+      .orderBy(asc(servicos.id))
       .all(),
   };
 }

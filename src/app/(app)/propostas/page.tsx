@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { empresas, propostaItens, propostas } from "@/db/schema";
 import { BotaoLink, Cabecalho, Selo, Tabela, Td, Th, Vazio } from "@/components/ui";
@@ -23,6 +23,8 @@ export default async function PropostasPage({ searchParams }: PageProps<"/propos
         subtotal: sql<number>`sum(${propostaItens.quantidade} * ${propostaItens.valorUnitario})`,
       })
       .from(propostaItens)
+      // mesma regra de calcularTotais: exames (por demanda), inclusos e opcionais não somam
+      .where(and(eq(propostaItens.cobranca, "fixo"), eq(propostaItens.incluso, false), eq(propostaItens.opcional, false)))
       .groupBy(propostaItens.propostaId)
       .all()
       .map((r) => [r.propostaId, r.subtotal]),

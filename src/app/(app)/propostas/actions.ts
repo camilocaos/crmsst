@@ -10,14 +10,25 @@ import { empresas, oportunidades, propostaItens, propostas } from "@/db/schema";
 import { ETAPAS_ABERTAS } from "@/lib/constantes";
 import { hoje } from "@/lib/formato";
 import { calcularTotais } from "@/lib/propostas";
-import { idOpcional, lerForm, numeroOpcional, textoOpcional, type EstadoForm } from "@/lib/form";
+import { checkbox, idOpcional, lerForm, numeroOpcional, textoOpcional, type EstadoForm } from "@/lib/form";
 
-const itemSchema = z.object({
-  servicoId: z.number().int().nullable(),
-  descricao: z.string().trim().min(1, "Descrição do item é obrigatória"),
-  quantidade: z.number().positive("Quantidade deve ser maior que zero"),
-  valorUnitario: z.number().min(0, "Valor não pode ser negativo"),
-});
+const textoItem = z.string().trim().nullish().transform((v) => v || null);
+const itemSchema = z
+  .object({
+    servicoId: z.number().int().nullable(),
+    descricao: z.string().trim().min(1, "Descrição do item é obrigatória"),
+    quantidade: z.number().positive("Quantidade deve ser maior que zero"),
+    valorUnitario: z.number().min(0, "Valor não pode ser negativo"),
+    area: z.enum(["seguranca", "saude"]).default("seguranca"),
+    cobranca: z.enum(["fixo", "por_demanda"]).default("fixo"),
+    natureza: textoItem,
+    periodo: textoItem,
+    detalhe: textoItem,
+    incluso: z.boolean().default(false),
+    opcional: z.boolean().default(false),
+  })
+  // Regra da CUIDI: exame é sempre por demanda. Nunca incluso, opcional ou com quantidade.
+  .transform((i) => (i.cobranca === "por_demanda" ? { ...i, quantidade: 1, incluso: false, opcional: false, natureza: null, periodo: null } : i));
 
 const propostaSchema = z.object({
   empresaId: idOpcional.refine((v) => v !== null, "Escolha a empresa").transform((v) => v!),
@@ -26,6 +37,8 @@ const propostaSchema = z.object({
   validade: textoOpcional,
   desconto: numeroOpcional.transform((v) => Math.min(Math.max(v ?? 0, 0), 100)),
   condicoesPagamento: textoOpcional,
+  prazoEntrega: textoOpcional,
+  mostrarMedicoes: checkbox,
   observacoes: textoOpcional,
   itens: z
     .string({ error: "Adicione pelo menos um item" })

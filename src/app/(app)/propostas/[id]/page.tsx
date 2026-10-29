@@ -2,17 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { BotaoLink, Selo } from "@/components/ui";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { contratos } from "@/db/schema";
+import { BotaoLink, Cabecalho, Cartao, Selo, TituloCartao } from "@/components/ui";
 import { BotaoConfirmar } from "@/components/formulario";
-import { STATUS_PROPOSTA } from "@/lib/constantes";
+import { AREAS, STATUS_CONTRATO, STATUS_PROPOSTA } from "@/lib/constantes";
 import { lerConfig } from "@/lib/config";
 import { formatarCnpj, formatarData, formatarMoeda, linkWhatsapp } from "@/lib/formato";
 import { calcularTotais, numeroProposta } from "@/lib/propostas";
 import { excluirProposta, mudarStatusProposta } from "../actions";
+import { gerarContratos } from "../../contratos/actions";
 import { carregarProposta } from "../carregar";
-import { BotaoImprimir } from "./botao-imprimir";
 
 export const metadata: Metadata = { title: "Proposta" };
+
+const botao = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition";
 
 export default async function PropostaPage({ params }: PageProps<"/propostas/[id]">) {
   await connection();
@@ -24,179 +29,178 @@ export default async function PropostaPage({ params }: PageProps<"/propostas/[id
   const { subtotal, valorDesconto, total } = calcularTotais(itens, proposta.desconto);
   const numero = numeroProposta(id, proposta.criadoEm);
   const status = STATUS_PROPOSTA[proposta.status];
+  const seguranca = itens.filter((i) => i.cobranca === "fixo");
+  const exames = itens.filter((i) => i.cobranca === "por_demanda");
+  const contratosDaProposta = db.select().from(contratos).where(eq(contratos.propostaId, id)).all();
+  const areasContratadas = new Set(itens.filter((i) => !i.opcional).map((i) => i.area));
+  const faltamContratos = [...areasContratadas].some((a) => !contratosDaProposta.some((c) => c.area === a));
+
   const zap = linkWhatsapp(contato?.telefone ?? empresa.telefone);
   const textoZap = encodeURIComponent(
-    `Olá${contato ? `, ${contato.nome.split(" ")[0]}` : ""}! Segue a proposta nº ${numero} de ${config.nomeEmpresa} no valor de ${formatarMoeda(total)}. Fico à disposição para qualquer dúvida.`,
+    `Olá${contato ? `, ${contato.nome.split(" ")[0]}` : ""}! Segue a proposta nº ${numero} do ${config.nomeEmpresa}${total ? ` no valor de ${formatarMoeda(total)}` : ""}. Fico à disposição para qualquer dúvida.`,
   );
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="nao-imprimir mb-6 flex flex-wrap items-center justify-between gap-3 pl-10 lg:pl-0">
-        <div className="flex items-center gap-3">
-          <Link href="/propostas" className="text-sm text-slate-500 hover:text-slate-800">
-            ← Propostas
-          </Link>
-          <Selo classe={status.classe}>{status.nome}</Selo>
-          {oportunidade && (
-            <Link href={`/funil/${oportunidade.id}`} className="text-xs text-slate-500 hover:underline">
-              Oportunidade: {oportunidade.titulo}
+    <div className="max-w-5xl">
+      <Cabecalho
+        titulo={`Proposta nº ${numero}`}
+        subtitulo={
+          <span className="flex flex-wrap items-center gap-2">
+            <Selo classe={status.classe}>{status.nome}</Selo>
+            <Link href={`/empresas/${empresa.id}`} className="hover:underline">
+              {empresa.razaoSocial}
             </Link>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {proposta.status === "rascunho" && (
-            <form action={mudarStatusProposta.bind(null, id, "enviada")}>
-              <button className="rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-sm font-medium text-sky-800 hover:bg-sky-100">
-                Marcar como enviada
-              </button>
-            </form>
-          )}
-          {(proposta.status === "enviada" || proposta.status === "rascunho") && (
-            <>
-              <form action={mudarStatusProposta.bind(null, id, "aceita")}>
-                <button className="rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-100">
-                  Aceita ✓
-                </button>
-              </form>
-              <form action={mudarStatusProposta.bind(null, id, "recusada")}>
-                <button className="rounded-lg border border-rose-200 bg-white px-3.5 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">
-                  Recusada
-                </button>
-              </form>
-            </>
-          )}
-          {zap && (
-            <a
-              href={`${zap}?text=${textoZap}`}
-              target="_blank"
-              className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Enviar no WhatsApp
+            {oportunidade && (
+              <Link href={`/funil/${oportunidade.id}`} className="hover:underline">
+                · {oportunidade.titulo}
+              </Link>
+            )}
+          </span>
+        }
+        acoes={
+          <>
+            <a href={`/api/documentos/proposta/${id}`} className={`${botao} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
+              Baixar Word
             </a>
-          )}
-          <BotaoLink href={`/propostas/${id}/editar`} variante="secundario">
-            Editar
-          </BotaoLink>
-          <BotaoImprimir />
-          <BotaoConfirmar acao={excluirProposta.bind(null, id)} mensagem="Excluir esta proposta?">
-            Excluir
-          </BotaoConfirmar>
-        </div>
+            <a href={`/api/documentos/proposta/${id}?formato=pdf`} className={`${botao} bg-marca-600 text-white hover:bg-marca-700`}>
+              Baixar PDF
+            </a>
+          </>
+        }
+      />
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {proposta.status === "rascunho" && (
+          <form action={mudarStatusProposta.bind(null, id, "enviada")}>
+            <button className={`${botao} border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100`}>Marcar como enviada</button>
+          </form>
+        )}
+        {(proposta.status === "enviada" || proposta.status === "rascunho") && (
+          <>
+            <form action={mudarStatusProposta.bind(null, id, "aceita")}>
+              <button className={`${botao} border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100`}>Aceita ✓</button>
+            </form>
+            <form action={mudarStatusProposta.bind(null, id, "recusada")}>
+              <button className={`${botao} border border-rose-200 bg-white text-rose-700 hover:bg-rose-50`}>Recusada</button>
+            </form>
+          </>
+        )}
+        {zap && (
+          <a href={`${zap}?text=${textoZap}`} target="_blank" className={`${botao} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
+            Enviar mensagem no WhatsApp
+          </a>
+        )}
+        <BotaoLink href={`/propostas/${id}/editar`} variante="secundario">
+          Editar
+        </BotaoLink>
+        <BotaoConfirmar acao={excluirProposta.bind(null, id)} mensagem="Excluir esta proposta? Os contratos gerados dela também serão excluídos.">
+          Excluir
+        </BotaoConfirmar>
       </div>
 
-      {/* Documento da proposta (é o que sai na impressão) */}
-      <article className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:p-0 print:shadow-none md:p-12">
-        <header className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-marca-600 pb-6">
-          <div>
-            <p className="text-xl font-bold text-marca-900">{config.nomeEmpresa}</p>
-            <p className="text-sm text-slate-500">Saúde e Segurança do Trabalho</p>
-            <div className="mt-1 space-y-0.5 text-xs text-slate-500">
-              {config.cnpjEmpresa && <p>CNPJ {formatarCnpj(config.cnpjEmpresa)}</p>}
-              {(config.telefoneEmpresa || config.emailEmpresa) && (
-                <p>{[config.telefoneEmpresa, config.emailEmpresa].filter(Boolean).join(" · ")}</p>
-              )}
-              {config.enderecoEmpresa && <p>{config.enderecoEmpresa}</p>}
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Proposta comercial</p>
-            <p className="text-lg font-semibold text-slate-900">Nº {numero}</p>
-            <p className="text-sm text-slate-500">Emitida em {formatarData(proposta.criadoEm)}</p>
-          </div>
-        </header>
-
-        <section className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cliente</p>
-            <p className="font-medium text-slate-900">{empresa.razaoSocial}</p>
-            {empresa.cnpj && <p className="text-slate-600">CNPJ {formatarCnpj(empresa.cnpj)}</p>}
-            {(empresa.endereco || empresa.cidade) && (
-              <p className="text-slate-600">
-                {[empresa.endereco, empresa.cidade && `${empresa.cidade}${empresa.uf ? `/${empresa.uf}` : ""}`]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            )}
-            {(empresa.numFuncionarios || empresa.grauRisco) && (
-              <p className="text-slate-600">
-                {empresa.numFuncionarios ? `${empresa.numFuncionarios} funcionários` : ""}
-                {empresa.numFuncionarios && empresa.grauRisco ? " · " : ""}
-                {empresa.grauRisco ? `Grau de risco ${empresa.grauRisco}` : ""}
-              </p>
-            )}
-          </div>
-          {contato && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">A/C</p>
-              <p className="font-medium text-slate-900">{contato.nome}</p>
-              {contato.cargo && <p className="text-slate-600">{contato.cargo}</p>}
-              {contato.email && <p className="text-slate-600">{contato.email}</p>}
-              {contato.telefone && <p className="text-slate-600">{contato.telefone}</p>}
-            </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+        <div className="space-y-6">
+          {seguranca.length > 0 && (
+            <Cartao>
+              <TituloCartao>Serviços de Segurança do Trabalho</TituloCartao>
+              <ul className="divide-y divide-slate-100">
+                {seguranca.map((i) => (
+                  <li key={i.id} className="flex items-start justify-between gap-3 py-2.5">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{i.descricao}</p>
+                      <p className="text-xs text-slate-500">
+                        {[i.natureza, i.periodo, i.opcional ? "opcional, fora do total" : "", i.quantidade !== 1 ? `${i.quantidade} × ${formatarMoeda(i.valorUnitario)}` : ""].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 text-sm font-semibold tabular-nums ${i.opcional ? "text-slate-400" : ""}`}>
+                      {i.incluso ? "Incluso" : formatarMoeda(i.quantidade * i.valorUnitario)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 space-y-1 border-t border-slate-200 pt-3 text-right text-sm">
+                {proposta.desconto > 0 && (
+                  <>
+                    <p className="text-slate-500">Subtotal {formatarMoeda(subtotal)}</p>
+                    <p className="text-slate-500">
+                      Desconto ({proposta.desconto.toLocaleString("pt-BR")}%) − {formatarMoeda(valorDesconto)}
+                    </p>
+                  </>
+                )}
+                <p className="text-base font-semibold text-marca-900">Total {formatarMoeda(total)}</p>
+              </div>
+            </Cartao>
           )}
-        </section>
 
-        <table className="mt-8 w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-300 text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="py-2 font-medium">Serviço</th>
-              <th className="py-2 text-right font-medium">Qtd.</th>
-              <th className="py-2 text-right font-medium">Valor unit.</th>
-              <th className="py-2 text-right font-medium">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {itens.map((i) => (
-              <tr key={i.id} className="border-b border-slate-100">
-                <td className="py-2.5 pr-4 text-slate-800">{i.descricao}</td>
-                <td className="py-2.5 text-right tabular-nums">{i.quantidade.toLocaleString("pt-BR")}</td>
-                <td className="py-2.5 text-right tabular-nums">{formatarMoeda(i.valorUnitario)}</td>
-                <td className="py-2.5 text-right font-medium tabular-nums">{formatarMoeda(i.quantidade * i.valorUnitario)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-4 ml-auto w-full max-w-xs space-y-1 text-sm">
-          <div className="flex justify-between text-slate-600">
-            <span>Subtotal</span>
-            <span className="tabular-nums">{formatarMoeda(subtotal)}</span>
-          </div>
-          {proposta.desconto > 0 && (
-            <div className="flex justify-between text-slate-600">
-              <span>Desconto ({proposta.desconto.toLocaleString("pt-BR")}%)</span>
-              <span className="tabular-nums">− {formatarMoeda(valorDesconto)}</span>
-            </div>
+          {exames.length > 0 && (
+            <Cartao>
+              <TituloCartao>Exames por demanda (valor por exame)</TituloCartao>
+              <ul className="grid gap-x-6 sm:grid-cols-2">
+                {exames.map((i) => (
+                  <li key={i.id} className="flex justify-between gap-2 border-b border-slate-100 py-1.5 text-sm">
+                    <span className="text-slate-700">{i.descricao}</span>
+                    <span className="tabular-nums text-slate-900">{formatarMoeda(i.valorUnitario)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Cartao>
           )}
-          <div className="flex justify-between border-t border-slate-300 pt-2 text-base font-bold text-slate-900">
-            <span>Total</span>
-            <span className="tabular-nums">{formatarMoeda(total)}</span>
-          </div>
+
+          <Cartao>
+            <TituloCartao>Condições</TituloCartao>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <Info rotulo="Forma de pagamento" valor={proposta.condicoesPagamento} />
+              <Info rotulo="Prazo de entrega" valor={proposta.prazoEntrega} />
+              <Info rotulo="Válida até" valor={proposta.validade ? formatarData(proposta.validade) : null} />
+              <Info rotulo="Tabela de medições" valor={proposta.mostrarMedicoes ? "Aparece na proposta" : "Não aparece"} />
+              {proposta.observacoes && <Info rotulo="Observações" valor={proposta.observacoes} />}
+            </dl>
+          </Cartao>
         </div>
 
-        <section className="mt-8 space-y-4 text-sm text-slate-700">
-          {proposta.condicoesPagamento && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Condições de pagamento</p>
-              <p className="whitespace-pre-line">{proposta.condicoesPagamento}</p>
-            </div>
-          )}
-          {proposta.observacoes && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Observações</p>
-              <p className="whitespace-pre-line">{proposta.observacoes}</p>
-            </div>
-          )}
-          {proposta.validade && (
-            <p className="text-slate-500">Proposta válida até {formatarData(proposta.validade)}.</p>
-          )}
-        </section>
+        <div className="space-y-6">
+          <Cartao>
+            <TituloCartao>Cliente</TituloCartao>
+            <p className="text-sm font-semibold text-slate-900">{empresa.razaoSocial}</p>
+            {empresa.cnpj && <p className="text-xs text-slate-500">CNPJ {formatarCnpj(empresa.cnpj)}</p>}
+            {contato && <p className="mt-2 text-xs text-slate-600">A/C {contato.nome}{contato.cargo ? ` · ${contato.cargo}` : ""}</p>}
+          </Cartao>
 
-        <footer className="mt-16 grid gap-10 text-center text-xs text-slate-500 sm:grid-cols-2">
-          <div className="border-t border-slate-400 pt-2">{config.nomeEmpresa}</div>
-          <div className="border-t border-slate-400 pt-2">De acordo — {empresa.razaoSocial}</div>
-        </footer>
-      </article>
+          <Cartao>
+            <TituloCartao>Contratos</TituloCartao>
+            {contratosDaProposta.length > 0 && (
+              <ul className="mb-3 space-y-2">
+                {contratosDaProposta.map((c) => (
+                  <li key={c.id}>
+                    <Link href={`/contratos/${c.id}`} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">
+                      <span className="font-semibold text-slate-900">{AREAS[c.area].nome}</span>
+                      <Selo classe={STATUS_CONTRATO[c.status].classe}>{STATUS_CONTRATO[c.status].nome}</Selo>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {proposta.status === "aceita" && faltamContratos ? (
+              <form action={gerarContratos.bind(null, id)}>
+                <button className={`${botao} w-full bg-marca-600 text-white hover:bg-marca-700`}>
+                  {contratosDaProposta.length ? "Gerar contratos que faltam" : "Gerar contratos"}
+                </button>
+              </form>
+            ) : proposta.status !== "aceita" ? (
+              <p className="text-xs text-slate-500">Quando a proposta for aceita, os contratos são gerados daqui: Segurança e/ou Saúde, conforme os serviços.</p>
+            ) : null}
+          </Cartao>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Info({ rotulo, valor }: { rotulo: string; valor: string | null | undefined }) {
+  return (
+    <div>
+      <dt className="text-xs text-slate-500">{rotulo}</dt>
+      <dd className="whitespace-pre-line text-slate-900">{valor || "—"}</dd>
     </div>
   );
 }

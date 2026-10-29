@@ -29,12 +29,7 @@ export default async function EditarPropostaPage({ params }: PageProps<"/propost
           {...opcoesEditor()}
           inicial={{
             ...proposta,
-            itens: itens.map(({ servicoId, descricao, quantidade, valorUnitario }) => ({
-              servicoId,
-              descricao,
-              quantidade,
-              valorUnitario,
-            })),
+            itens: itens.map(({ id: _id, propostaId: _p, ...item }) => item),
           }}
         />
       </Cartao>
