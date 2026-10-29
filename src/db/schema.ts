@@ -60,6 +60,10 @@ export const servicos = sqliteTable("servicos", {
   precoBase: real("preco_base").notNull().default(0),
   unidade: text("unidade").notNull().default("por empresa"),
   ativo: integer("ativo", { mode: "boolean" }).notNull().default(true),
+  /** Unidade da CUIDI que presta o serviço: define o contrato e o timbrado. */
+  area: text("area", { enum: ["seguranca", "saude"] }).notNull().default("seguranca"),
+  /** "por_demanda": cobrado por exame realizado, nunca entra no total da proposta. */
+  cobranca: text("cobranca", { enum: ["fixo", "por_demanda"] }).notNull().default("fixo"),
 });
 
 export const oportunidades = sqliteTable("oportunidades", {
@@ -118,6 +122,10 @@ export const propostas = sqliteTable("propostas", {
   /** Desconto em percentual (0 a 100). */
   desconto: real("desconto").notNull().default(0),
   condicoesPagamento: text("condicoes_pagamento"),
+  /** Prazo de entrega dos documentos (texto livre, ex.: "até 15 dias úteis após..."). */
+  prazoEntrega: text("prazo_entrega"),
+  /** Mostra a tabela de referência das avaliações quantitativas não contratadas. */
+  mostrarMedicoes: integer("mostrar_medicoes", { mode: "boolean" }).notNull().default(true),
   observacoes: text("observacoes"),
   criadoEm: criadoEm(),
 });
@@ -133,6 +141,46 @@ export const propostaItens = sqliteTable("proposta_itens", {
   descricao: text("descricao").notNull(),
   quantidade: real("quantidade").notNull().default(1),
   valorUnitario: real("valor_unitario").notNull().default(0),
+  area: text("area", { enum: ["seguranca", "saude"] }).notNull().default("seguranca"),
+  cobranca: text("cobranca", { enum: ["fixo", "por_demanda"] }).notNull().default("fixo"),
+  /** Elaboração, Renovação ou Atualização (programas e laudos). */
+  natureza: text("natureza"),
+  /** Período contratado quando limitado (ex.: eSocial "outubro e novembro de 2026"). */
+  periodo: text("periodo"),
+  /** O que é entregue: aparece no escopo da proposta e no objeto do contrato. */
+  detalhe: text("detalhe"),
+  /** Incluso sem custo (ex.: eSocial no período inicial). Nunca usado para exames. */
+  incluso: integer("incluso", { mode: "boolean" }).notNull().default(false),
+  /** Opcional, fora do total (ex.: AET dependendo do resultado da AEP). */
+  opcional: integer("opcional", { mode: "boolean" }).notNull().default(false),
+});
+
+/** Contrato gerado a partir de uma proposta aceita: um por unidade (Saúde e/ou Segurança). */
+export const contratos = sqliteTable("contratos", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  propostaId: integer("proposta_id")
+    .notNull()
+    .references(() => propostas.id, { onDelete: "cascade" }),
+  area: text("area", { enum: ["seguranca", "saude"] }).notNull(),
+  /** Pontual (serviço específico) ou mensalista (escopo continuado). */
+  tipo: text("tipo", { enum: ["pontual", "mensalista"] }).notNull().default("pontual"),
+  /** Contrato feito depois de o serviço já ter sido executado. */
+  formalizacaoPosterior: integer("formalizacao_posterior", { mode: "boolean" }).notNull().default(false),
+  dataExecucao: text("data_execucao"),
+  valorMensal: real("valor_mensal"),
+  vigencia: text("vigencia"),
+  formaPagamento: text("forma_pagamento"),
+  vencimento: text("vencimento"),
+  /** Pagamentos já feitos (um por linha), para abater e registrar no contrato. */
+  pagamentosRealizados: text("pagamentos_realizados"),
+  enderecoCliente: text("endereco_cliente"),
+  representante: text("representante"),
+  testemunha1: text("testemunha1"),
+  testemunha2: text("testemunha2"),
+  dataAssinatura: text("data_assinatura"),
+  status: text("status", { enum: ["rascunho", "enviado", "assinado", "cancelado"] }).notNull().default("rascunho"),
+  observacoes: text("observacoes"),
+  criadoEm: criadoEm(),
 });
 
 export const usuarios = sqliteTable("usuarios", {
@@ -171,3 +219,5 @@ export type Tarefa = typeof tarefas.$inferSelect;
 export type Proposta = typeof propostas.$inferSelect;
 export type PropostaItem = typeof propostaItens.$inferSelect;
 export type Usuario = typeof usuarios.$inferSelect;
+export type Contrato = typeof contratos.$inferSelect;
+export type Area = "seguranca" | "saude";

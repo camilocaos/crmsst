@@ -6,13 +6,15 @@ type Db = BetterSQLite3Database<typeof schema>;
 type Item = typeof schema.servicos.$inferInsert;
 
 /** Versão da tabela padrão da clínica. Mude ao publicar uma tabela nova. */
-export const VERSAO_TABELA_CLINICA = "2026-10.2"; // .2: inclui o VDRL
+export const VERSAO_TABELA_CLINICA = "2026-10.3"; // .2: VDRL · .3: área Saúde e cobrança por demanda
 
 const exame = (categoria: string, nome: string, precoBase: number, descricao?: string): Item => ({
   categoria,
   nome,
   precoBase,
   unidade: "por exame",
+  area: "saude",
+  cobranca: "por_demanda",
   descricao: descricao ?? "Cobrado por exame realizado, por demanda.",
 });
 
@@ -56,6 +58,8 @@ export const TABELA_CLINICA: Item[] = [
     nome: "Combo NR-35 (trabalho em altura)",
     precoBase: 320,
     unidade: "por colaborador",
+    area: "saude",
+    cobranca: "por_demanda",
     descricao:
       "Valor no Pix (crédito ou boleto: R$ 420,00), por colaborador atendido. Avaliação clínica, avaliação psicossocial, acuidade visual, audiometria, eletrocardiograma, eletroencefalograma, glicemia, hemograma, teste de Romberg e raio-X lombossacra.",
   },
@@ -64,6 +68,8 @@ export const TABELA_CLINICA: Item[] = [
     nome: "Combo NR-10 (eletricidade)",
     precoBase: 335,
     unidade: "por colaborador",
+    area: "saude",
+    cobranca: "por_demanda",
     descricao:
       "Valor no Pix (crédito ou boleto: R$ 435,00), por colaborador atendido. Avaliação clínica, avaliação psicossocial, acuidade visual, audiometria, teste de Ishihara, eletrocardiograma, eletroencefalograma, glicemia, hemograma e raio-X lombossacra.",
   },
@@ -72,6 +78,8 @@ export const TABELA_CLINICA: Item[] = [
     nome: "Combo manipulação de alimentos",
     precoBase: 180,
     unidade: "por colaborador",
+    area: "saude",
+    cobranca: "por_demanda",
     descricao:
       "Valor no Pix (crédito ou boleto: R$ 230,00), por colaborador atendido. Avaliação clínica, VDRL, parasitológico de fezes (EPF), micológico de unhas, hemograma, EAS (urina tipo I) e coprocultura de fezes.",
   },
@@ -93,6 +101,11 @@ export function aplicarTabelaClinica(db: Db) {
     const novos = TABELA_CLINICA.filter((i) => !existentes.has(i.nome));
     if (novos.length) tx.insert(schema.servicos).values(novos).run();
     tx.update(schema.servicos).set({ ativo: false }).where(inArray(schema.servicos.nome, GENERICOS_ANTIGOS)).run();
+    // exames e combos são sempre da Saúde e cobrados por demanda
+    tx.update(schema.servicos)
+      .set({ area: "saude", cobranca: "por_demanda" })
+      .where(inArray(schema.servicos.nome, [...TABELA_CLINICA.map((i) => i.nome), ...GENERICOS_ANTIGOS]))
+      .run();
     tx.insert(schema.configuracoes)
       .values({ chave: "tabela_clinica_versao", valor: VERSAO_TABELA_CLINICA })
       .onConflictDoUpdate({ target: schema.configuracoes.chave, set: { valor: VERSAO_TABELA_CLINICA } })
