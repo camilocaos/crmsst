@@ -20,6 +20,7 @@ if (!fs.existsSync(path.join(standalone, "server.js"))) {
 copiar(".next/static", ".next/static");
 copiar("public", "public");
 copiar("drizzle", "drizzle");
+copiar("documentos", "documentos"); // timbrados e logos das propostas e contratos
 // O better-sqlite3 carrega o binário dinamicamente; garante o pacote inteiro
 copiar("node_modules/better-sqlite3", "node_modules/better-sqlite3");
 // Nunca levar bancos de dados locais para o instalador

@@ -26,13 +26,27 @@
       "buildResources": "build"
     },
     "asar": true,
-    "files": ["main.cjs", "preload.cjs", "icone.png", "package.json"],
-    "publish": [{ "provider": "github", "owner": "camilocaos", "repo": "crmsst", "releaseType": "release" }],
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "icone.png",
+      "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "camilocaos",
+        "repo": "crmsst",
+        "releaseType": "release"
+      }
+    ],
     "extraResources": [
       {
         "from": ".next/standalone",
         "to": "server",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "afterPack": "scripts/after-pack.cjs",
@@ -55,6 +69,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
+    "docx": "^9.15.0",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.3",
     "react": "19.3.0",
