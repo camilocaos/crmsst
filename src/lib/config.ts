@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/db";
 import { configuracoes } from "@/db/schema";
+import { MARGEM_MEDICOES_PADRAO } from "@/lib/propostas";
 
 export type Config = {
   nomeEmpresa: string;
@@ -11,6 +12,8 @@ export type Config = {
   metaMensal: number;
   validadePropostaDias: number;
   condicoesPagamento: string;
+  /** R$ somados ao custo do fornecedor em cada medição. */
+  margemMedicoes: number;
 };
 
 export function lerConfig(): Config {
@@ -24,6 +27,7 @@ export function lerConfig(): Config {
     metaMensal: Number(mapa.get("meta_mensal") ?? 0) || 0,
     validadePropostaDias: Number(mapa.get("validade_proposta_dias") ?? 15) || 15,
     condicoesPagamento: mapa.get("condicoes_pagamento") ?? "",
+    margemMedicoes: mapa.has("margem_medicoes") ? Number(mapa.get("margem_medicoes")) || 0 : MARGEM_MEDICOES_PADRAO,
   };
 }
 

@@ -3,7 +3,7 @@ import { AlignmentType, BorderStyle, Packer, PageBreak, Paragraph, TableRow } fr
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, type Empresa, type Proposta, type PropostaItem } from "@/db/schema";
-import { CATEGORIA_MEDICOES } from "@/db/catalogo-sst";
+import { CATEGORIA_MEDICOES, NOME_DESLOCAMENTO } from "@/lib/propostas";
 import { lerConfig } from "@/lib/config";
 import { formatarCnpj, formatarData } from "@/lib/formato";
 import { calcularTotais, numeroProposta } from "@/lib/propostas";
@@ -29,7 +29,7 @@ export async function gerarPropostaDocx({ proposta, itens, empresa }: DadosPropo
 
   // Medições contratadas aparecem como item; a tabela de referência mostra só as não contratadas
   const medicoesContratadas = new Set(seguranca.map((i) => i.servicoId).filter(Boolean));
-  const medicoesReferencia = proposta.mostrarMedicoes && seguranca.length
+  const tabelaMedicoes = proposta.mostrarMedicoes && seguranca.length
     ? db
         .select()
         .from(servicos)
@@ -38,6 +38,8 @@ export async function gerarPropostaDocx({ proposta, itens, empresa }: DadosPropo
         .all()
         .filter((m) => !medicoesContratadas.has(m.id))
     : [];
+  const deslocamento = tabelaMedicoes.find((m) => m.nome === NOME_DESLOCAMENTO);
+  const medicoesReferencia = tabelaMedicoes.filter((m) => m !== deslocamento);
 
   const local = [empresa.cidade, empresa.uf].filter(Boolean).join("/");
   const contato = [config.telefoneEmpresa, config.emailEmpresa].filter(Boolean).join(" · ");
@@ -114,7 +116,7 @@ export async function gerarPropostaDocx({ proposta, itens, empresa }: DadosPropo
     ...(exames.length
       ? [
           subtitulo("CUIDI Saúde Ocupacional", AZUL),
-          P([t("Exames ocupacionais por demanda", { bold: true })], { depois: 40, junto: true, alinhar: AlignmentType.LEFT, recuo: 220 }),
+          P([t("Realização dos exames ocupacionais, por demanda", { bold: true })], { depois: 40, junto: true, alinhar: AlignmentType.LEFT, recuo: 220 }),
           P("Os exames são realizados conforme a necessidade da empresa, mediante encaminhamento, e cobrados individualmente pelo valor de cada exame efetivamente realizado. O protocolo definitivo segue o PCMSO: se ele indicar exames adicionais, eles serão informados e orçados antes da realização.", { depois: 160, recuo: 220 }),
         ]
       : []),
@@ -149,7 +151,7 @@ export async function gerarPropostaDocx({ proposta, itens, empresa }: DadosPropo
       : []),
     ...(exames.length
       ? [
-          subtitulo("Exames ocupacionais (valor por exame realizado)", AZUL),
+          subtitulo("Realização dos exames ocupacionais (valor por exame realizado)", AZUL),
           // a última linha fica presa à frase da regra, para ela não ir sozinha para outra página
           tabela([cabecalhoTabela("Exame", "Valor por exame"), ...exames.map((i, k) => linhaValor(i.descricao, real(i.valorUnitario), { junto: k === exames.length - 1 }))]),
           P("Cobrança somente pelos exames efetivamente realizados, sem pacote, sem quantidade mínima e sem valor fixo mensal.", { antes: 100, depois: 0 }),
@@ -166,6 +168,9 @@ export async function gerarPropostaDocx({ proposta, itens, empresa }: DadosPropo
           cabecalhoTabela("Avaliação quantitativa", "Valor de referência"),
           ...medicoesReferencia.map((m, k) => linhaValor(m.nome, real(m.precoBase), { junto: k < medicoesReferencia.length - 1 })),
         ]),
+        ...(deslocamento
+          ? [P(`Valores por avaliação. Em cada visita para as medições é cobrada também a taxa de deslocamento de ${real(deslocamento.precoBase)}.`, { antes: 100, depois: 0 })]
+          : []),
       ]
     : [];
 

@@ -5,7 +5,7 @@ import { Campo } from "@/components/ui";
 import { Formulario } from "@/components/formulario";
 import { STATUS_PROPOSTA } from "@/lib/constantes";
 import { formatarMoeda } from "@/lib/formato";
-import { NATUREZAS, calcularTotais } from "@/lib/propostas";
+import { CATEGORIA_MEDICOES, NATUREZAS, NOME_DESLOCAMENTO, calcularTotais } from "@/lib/propostas";
 import type { EstadoForm } from "@/lib/form";
 
 type Area = "seguranca" | "saude";
@@ -105,6 +105,16 @@ export function EditorProposta({
   function adicionarTabelaClinica() {
     const ja = new Set(exames.map((e) => e.servicoId));
     adicionar(servicosExames.filter((s) => !ja.has(s.id)).map(itemDoServico));
+    document.getElementById("exames-por-demanda")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /** Medição contratada leva junto a taxa de deslocamento do fornecedor (uma vez só). */
+  function adicionarServico(s: ServicoOpcao) {
+    const novos = [itemDoServico(s)];
+    const deslocamento = servicosFixos.find((x) => x.nome === NOME_DESLOCAMENTO);
+    const jaTem = itens.some((i) => i.descricao === NOME_DESLOCAMENTO);
+    if (s.categoria === CATEGORIA_MEDICOES && s.nome !== NOME_DESLOCAMENTO && deslocamento && !jaTem) novos.push(itemDoServico(deslocamento));
+    adicionar(novos);
   }
 
   return (
@@ -148,7 +158,12 @@ export function EditorProposta({
             <p className="mt-0.5 pl-3 text-xs text-slate-500">Programas, laudos, treinamentos, eSocial e medições contratadas. Somam no total.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <SeletorServico servicos={servicosFixos} aoEscolher={(s) => adicionar([itemDoServico(s)])} rotulo="+ Serviço do catálogo" />
+            <SeletorServico
+              servicos={servicosFixos}
+              aoEscolher={adicionarServico}
+              rotulo="+ Serviço do catálogo"
+              extra={servicosExames.length ? { grupo: "Saúde Ocupacional", rotulo: "Realização dos exames ocupacionais — tabela da clínica, por demanda", aoEscolher: adicionarTabelaClinica } : undefined}
+            />
             <button
               type="button"
               className={botaoSec}
@@ -234,10 +249,10 @@ export function EditorProposta({
       </section>
 
       {/* ---------- Saúde Ocupacional: exames por demanda ---------- */}
-      <section className="mt-8">
+      <section id="exames-por-demanda" className="mt-8 scroll-mt-4">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h3 className="border-l-4 border-[#1FB5B8] pl-2 text-sm font-semibold text-marca-900">Exames por demanda (Saúde Ocupacional)</h3>
+            <h3 className="border-l-4 border-[#1FB5B8] pl-2 text-sm font-semibold text-marca-900">Realização dos exames ocupacionais (Saúde Ocupacional)</h3>
             <p className="mt-0.5 pl-3 text-xs text-slate-500">Valor por exame realizado. Nunca entram no total, nem como pacote ou incluso.</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -304,12 +319,24 @@ export function EditorProposta({
   );
 }
 
-function SeletorServico({ servicos, aoEscolher, rotulo }: { servicos: ServicoOpcao[]; aoEscolher: (s: ServicoOpcao) => void; rotulo: string }) {
+function SeletorServico({
+  servicos,
+  aoEscolher,
+  rotulo,
+  extra,
+}: {
+  servicos: ServicoOpcao[];
+  aoEscolher: (s: ServicoOpcao) => void;
+  rotulo: string;
+  /** Opção especial no fim da lista (ex.: a tabela de exames inteira). */
+  extra?: { grupo: string; rotulo: string; aoEscolher: () => void };
+}) {
   const categorias = [...new Set(servicos.map((s) => s.categoria))];
   return (
     <select
       value=""
       onChange={(e) => {
+        if (e.target.value === "extra") return extra?.aoEscolher();
         const s = servicos.find((x) => x.id === Number(e.target.value));
         if (s) aoEscolher(s);
       }}
@@ -327,6 +354,11 @@ function SeletorServico({ servicos, aoEscolher, rotulo }: { servicos: ServicoOpc
             ))}
         </optgroup>
       ))}
+      {extra && (
+        <optgroup label={extra.grupo}>
+          <option value="extra">{extra.rotulo}</option>
+        </optgroup>
+      )}
     </select>
   );
 }

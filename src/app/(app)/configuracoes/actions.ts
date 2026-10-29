@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { usuarios } from "@/db/schema";
 import { salvarConfig } from "@/lib/config";
+import { aplicarMargemMedicoes } from "@/db/catalogo-sst";
 import { lerForm, nomeUsuarioSchema, numeroOpcional, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 import { gerarHashSenha } from "@/lib/senha";
 import { exigirUsuario } from "@/lib/sessao";
@@ -25,6 +26,7 @@ export async function salvarEmpresa(_: EstadoForm, formData: FormData): Promise<
       metaMensal: numeroOpcional,
       validadePropostaDias: numeroOpcional,
       condicoesPagamento: textoOpcional,
+      margemMedicoes: numeroOpcional,
     }),
   );
   if (!r.valido) return { erro: r.erro };
@@ -38,7 +40,9 @@ export async function salvarEmpresa(_: EstadoForm, formData: FormData): Promise<
     meta_mensal: String(Math.max(0, d.metaMensal ?? 0)),
     validade_proposta_dias: String(Math.max(1, Math.trunc(d.validadePropostaDias ?? 15))),
     condicoes_pagamento: d.condicoesPagamento ?? "",
+    margem_medicoes: String(Math.max(0, d.margemMedicoes ?? 0)),
   });
+  aplicarMargemMedicoes(db, Math.max(0, d.margemMedicoes ?? 0));
   revalidatePath("/", "layout");
   return { ok: true };
 }

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { exigirUsuario } from "@/lib/sessao";
 import { servicos } from "@/db/schema";
+import { lerConfig } from "@/lib/config";
 import { checkbox, lerForm, numeroOpcional, textoObrigatorio, textoOpcional, type EstadoForm } from "@/lib/form";
 
 const servicoSchema = z.object({
@@ -17,7 +18,10 @@ const servicoSchema = z.object({
   ativo: checkbox,
   area: z.enum(["seguranca", "saude"]).default("seguranca"),
   cobranca: z.enum(["fixo", "por_demanda"]).default("fixo"),
-});
+  custo: numeroOpcional,
+})
+  // Com custo de fornecedor, o preço de venda é sempre custo + margem das Configurações
+  .transform((d) => (d.custo != null ? { ...d, precoBase: d.custo + lerConfig().margemMedicoes } : d));
 
 export async function criarServico(_: EstadoForm, formData: FormData): Promise<EstadoForm> {
   await exigirUsuario();

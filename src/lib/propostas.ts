@@ -22,3 +22,12 @@ export function numeroProposta(id: number, criadoEm: string) {
 }
 
 export const NATUREZAS = ["Elaboração", "Renovação", "Atualização"] as const;
+
+/** Categoria das avaliações quantitativas (medições ambientais). */
+export const CATEGORIA_MEDICOES = "Avaliações quantitativas";
+
+/** Taxa cobrada pelo fornecedor das medições a cada visita; repassada sem margem. */
+export const NOME_DESLOCAMENTO = "Taxa de deslocamento (medições)";
+
+/** Margem padrão em R$ sobre o custo de cada medição do fornecedor. */
+export const MARGEM_MEDICOES_PADRAO = 100;

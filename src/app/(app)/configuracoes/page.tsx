@@ -88,6 +88,12 @@ function AbaEmpresa() {
           <Campo rotulo="Condições de pagamento padrão" className="md:col-span-2">
             <textarea name="condicoesPagamento" rows={3} defaultValue={config.condicoesPagamento} className="campo" />
           </Campo>
+          <Campo rotulo="Margem sobre as medições (R$ por medição)">
+            <input name="margemMedicoes" type="number" min={0} step="10" defaultValue={config.margemMedicoes} className="campo" />
+          </Campo>
+          <p className="self-end pb-2 text-xs text-slate-500">
+            Somada ao custo do fornecedor em cada avaliação quantitativa. A taxa de deslocamento não tem margem.
+          </p>
         </div>
       </Formulario>
     </Cartao>

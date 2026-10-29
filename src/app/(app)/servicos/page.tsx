@@ -10,7 +10,7 @@ import { atualizarServico, criarServico } from "./actions";
 
 export const metadata: Metadata = { title: "Serviços SST" };
 
-const UNIDADES = ["por exame", "por colaborador", "por empresa", "por funcionário", "por funcionário/mês", "por participante", "por turma", "por mês", "por hora", "por visita"];
+const UNIDADES = ["por exame", "por colaborador", "por empresa", "por funcionário", "por funcionário/mês", "por participante", "por turma", "por mês", "por hora", "por visita", "por avaliação"];
 
 export default async function ServicosPage() {
   await connection();
@@ -61,6 +61,7 @@ function ItemServico({ servico: s, categorias }: { servico: Servico; categorias:
           <div className="shrink-0 text-right">
             <p className="text-sm font-semibold tabular-nums">{formatarMoeda(s.precoBase)}</p>
             <p className="text-xs text-slate-500">{s.unidade}</p>
+            {s.custo != null && <p className="text-[11px] text-slate-500">custo {formatarMoeda(s.custo)}</p>}
             <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{s.area === "saude" ? "Saúde" : "Segurança"}{s.cobranca === "por_demanda" ? " · por demanda" : ""}</p>
             {!s.ativo && <Selo classe="bg-slate-100 text-slate-600">inativo</Selo>}
           </div>
@@ -113,6 +114,16 @@ function CamposServico({ categorias, servico }: { categorias: string[]; servico?
           ))}
         </select>
       </div>
+      <input
+        name="custo"
+        type="number"
+        min={0}
+        step="0.01"
+        defaultValue={servico?.custo ?? ""}
+        placeholder="Custo do fornecedor (R$), se tiver"
+        title="Com custo, o preço vira custo + margem das medições (Configurações)"
+        className="campo"
+      />
       <div className="grid grid-cols-2 gap-3">
         <select name="area" defaultValue={servico?.area ?? "seguranca"} className="campo" title="Define o contrato e o timbrado">
           <option value="seguranca">Segurança do Trabalho</option>

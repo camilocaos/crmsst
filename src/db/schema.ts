@@ -61,6 +61,8 @@ export const servicos = sqliteTable("servicos", {
   categoria: text("categoria").notNull(),
   descricao: text("descricao"),
   precoBase: real("preco_base").notNull().default(0),
+  /** Custo cobrado pelo fornecedor (medições). Com custo, o preço é custo + margem das Configurações. */
+  custo: real("custo"),
   unidade: text("unidade").notNull().default("por empresa"),
   ativo: integer("ativo", { mode: "boolean" }).notNull().default(true),
   /** Unidade da CUIDI que presta o serviço: define o contrato e o timbrado. */

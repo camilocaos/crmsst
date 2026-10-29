@@ -1,0 +1,1 @@
+ALTER TABLE `servicos` ADD `custo` real;
