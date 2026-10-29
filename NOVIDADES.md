@@ -1,1 +1,2 @@
 - Contratos: botão "Novo contrato" e "Gerar contrato" na proposta aceita e na empresa
+- Contratos: forma de pagamento com Pix, boleto à vista ou boleto parcelado
