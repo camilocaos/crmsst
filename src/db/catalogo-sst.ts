@@ -44,10 +44,6 @@ export const CATALOGO_SST: Item[] = [
   sst("eSocial", "PPP - Perfil Profissiográfico Previdenciário", 80, "por funcionário", "Emissão do PPP dos colaboradores indicados."),
   sst("Treinamentos", "NR-05 - Constituição da CIPA ou nomeação de representante", 165, "por participante", "Constituição da CIPA ou nomeação do representante da NR-05, conforme o enquadramento, com treinamento e certificado."),
   sst("Treinamentos", "Certificado de treinamento de NR", 100, "por certificado", "Emissão de certificado de treinamento (NR-06, NR-12, NR-18, NR-35 ou outra), condicionada à realização e comprovação do treinamento."),
-  sst("Treinamentos", "Treinamento NR-35 - Trabalho em altura", 180, "por participante", "Treinamento de trabalho em altura com carga horária conforme a NR-35."),
-  sst("Treinamentos", "Treinamento NR-10 - Segurança em eletricidade", 350, "por participante", "Treinamento básico ou reciclagem de segurança em instalações e serviços em eletricidade."),
-  sst("Treinamentos", "Treinamento NR-06 - Uso de EPI", 400, "por turma", "Orientação sobre uso, guarda e conservação dos equipamentos de proteção individual."),
-  sst("Treinamentos", "Treinamento NR-23 - Brigada de incêndio", 1500, "por turma", "Formação de brigadistas para prevenção e combate a princípio de incêndio."),
   sst("Consultoria", "Assessoria mensal em SST", 800, "por mês", "Acompanhamento técnico contínuo em Saúde e Segurança do Trabalho, conforme o escopo contratado."),
   // Medições: custo da tabela do fornecedor (BSB MED)
   medicao("Medição de álcool etílico / etanol (CAS 64-17-5)", 200, "Avaliação quantitativa de exposição a álcool etílico (etanol)."),

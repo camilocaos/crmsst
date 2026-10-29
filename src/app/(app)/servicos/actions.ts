@@ -19,6 +19,7 @@ const servicoSchema = z.object({
   area: z.enum(["seguranca", "saude"]).default("seguranca"),
   cobranca: z.enum(["fixo", "por_demanda"]).default("fixo"),
   custo: numeroOpcional,
+  precoReciclagem: numeroOpcional,
 })
   // Com custo de fornecedor, o preço de venda é sempre custo + margem das Configurações
   .transform((d) => (d.custo != null ? { ...d, precoBase: d.custo + lerConfig().margemMedicoes } : d));

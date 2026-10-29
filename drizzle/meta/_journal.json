@@ -43,6 +43,13 @@
       "when": 1793282572348,
       "tag": "0005_pagamento_contrato",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793302682080,
+      "tag": "0006_preco_reciclagem",
+      "breakpoints": true
     }
   ]
 }

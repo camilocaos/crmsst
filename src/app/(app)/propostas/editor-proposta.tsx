@@ -5,7 +5,8 @@ import { Campo } from "@/components/ui";
 import { Formulario } from "@/components/formulario";
 import { STATUS_PROPOSTA } from "@/lib/constantes";
 import { formatarMoeda } from "@/lib/formato";
-import { CATEGORIA_MEDICOES, NATUREZAS, NOME_DESLOCAMENTO, calcularTotais } from "@/lib/propostas";
+import { CATEGORIA_MEDICOES, CATEGORIA_TREINAMENTOS, MODALIDADES_TREINAMENTO, NATUREZAS, NOME_DESLOCAMENTO, calcularTotais } from "@/lib/propostas";
+import { BuscaServico } from "./busca-servico";
 import type { EstadoForm } from "@/lib/form";
 
 type Area = "seguranca" | "saude";
@@ -16,6 +17,7 @@ type ServicoOpcao = {
   nome: string;
   categoria: string;
   precoBase: number;
+  precoReciclagem: number | null;
   unidade: string;
   descricao: string | null;
   area: Area;
@@ -56,14 +58,16 @@ const comChave = (i: ItemEditor): Item => ({ ...i, chave: proximaChave++ });
 /** Item novo a partir do catálogo, já com as regras da CUIDI. */
 function itemDoServico(s: ServicoOpcao): ItemEditor {
   const demanda = s.cobranca === "por_demanda";
+  const treinamento = s.categoria === CATEGORIA_TREINAMENTOS;
   return {
     servicoId: s.id,
     descricao: s.nome,
     quantidade: 1,
-    valorUnitario: s.precoBase,
+    // Treinamento entra como reciclagem (o caso mais comum)
+    valorUnitario: treinamento ? (s.precoReciclagem ?? s.precoBase) : s.precoBase,
     area: s.area,
     cobranca: s.cobranca,
-    natureza: !demanda && s.categoria === "Programas e laudos" ? "Elaboração" : null,
+    natureza: treinamento ? "Reciclagem" : !demanda && s.categoria === "Programas e laudos" ? "Elaboração" : null,
     periodo: null,
     detalhe: s.descricao,
     incluso: false,
@@ -101,6 +105,16 @@ export function EditorProposta({
   const alterar = (chave: number, mudanca: Partial<ItemEditor>) =>
     setItens((a) => a.map((i) => (i.chave === chave ? { ...i, ...mudanca } : i)));
   const remover = (chave: number) => setItens((a) => a.filter((i) => i.chave !== chave));
+  const servicoDe = (i: Item) => (i.servicoId ? servicos.find((s) => s.id === i.servicoId) : undefined);
+
+  /** Treinamento: trocar entre inicial e reciclagem troca o preço do catálogo. */
+  function mudarNatureza(i: Item, natureza: string | null) {
+    const s = servicoDe(i);
+    if (s?.categoria === CATEGORIA_TREINAMENTOS && natureza) {
+      const preco = natureza === "Inicial" ? s.precoBase : (s.precoReciclagem ?? s.precoBase);
+      alterar(i.chave, { natureza, valorUnitario: preco || i.valorUnitario });
+    } else alterar(i.chave, { natureza });
+  }
 
   function adicionarTabelaClinica() {
     const ja = new Set(exames.map((e) => e.servicoId));
@@ -157,11 +171,11 @@ export function EditorProposta({
             <h3 className="border-l-4 border-[#8DC63F] pl-2 text-sm font-semibold text-marca-900">Serviços de Segurança do Trabalho</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            <SeletorServico
+            <BuscaServico
               servicos={servicosFixos}
               aoEscolher={adicionarServico}
-              rotulo="+ Serviço do catálogo"
-              extra={servicosExames.length ? { grupo: "Saúde Ocupacional", rotulo: "Realização dos exames ocupacionais", aoEscolher: adicionarTabelaClinica } : undefined}
+              rotulo="Buscar serviço ou treinamento..."
+              extra={servicosExames.length ? { rotulo: "+ Realização dos exames ocupacionais", aoEscolher: adicionarTabelaClinica } : undefined}
             />
             <button
               type="button"
@@ -185,9 +199,9 @@ export function EditorProposta({
               <li key={i.chave} className="rounded-lg border border-slate-200 p-3">
                 <div className="grid gap-2 md:grid-cols-[1fr_9rem_5rem_8rem_7rem_2rem] md:items-center">
                   <input value={i.descricao} onChange={(e) => alterar(i.chave, { descricao: e.target.value })} placeholder="Serviço" className="campo font-semibold" />
-                  <select value={i.natureza ?? ""} onChange={(e) => alterar(i.chave, { natureza: e.target.value || null })} className="campo" title="Natureza">
+                  <select value={i.natureza ?? ""} onChange={(e) => mudarNatureza(i, e.target.value || null)} className="campo" title="Natureza">
                     <option value="">Natureza —</option>
-                    {NATUREZAS.map((n) => (
+                    {(servicoDe(i)?.categoria === CATEGORIA_TREINAMENTOS ? MODALIDADES_TREINAMENTO : NATUREZAS).map((n) => (
                       <option key={n}>{n}</option>
                     ))}
                   </select>
@@ -255,7 +269,7 @@ export function EditorProposta({
             <p className="mt-0.5 pl-3 text-xs text-slate-500">Valor por exame.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <SeletorServico servicos={servicosExames} aoEscolher={(s) => adicionar([itemDoServico(s)])} rotulo="+ Exame" />
+            <BuscaServico servicos={servicosExames} aoEscolher={(s) => adicionar([itemDoServico(s)])} rotulo="Buscar exame..." />
             <button type="button" onClick={adicionarTabelaClinica} className={botaoSec}>
               + Tabela da clínica inteira
             </button>
@@ -318,46 +332,3 @@ export function EditorProposta({
   );
 }
 
-function SeletorServico({
-  servicos,
-  aoEscolher,
-  rotulo,
-  extra,
-}: {
-  servicos: ServicoOpcao[];
-  aoEscolher: (s: ServicoOpcao) => void;
-  rotulo: string;
-  /** Opção especial no fim da lista (ex.: a tabela de exames inteira). */
-  extra?: { grupo: string; rotulo: string; aoEscolher: () => void };
-}) {
-  const categorias = [...new Set(servicos.map((s) => s.categoria))];
-  return (
-    <select
-      value=""
-      onChange={(e) => {
-        if (e.target.value === "extra") return extra?.aoEscolher();
-        const s = servicos.find((x) => x.id === Number(e.target.value));
-        if (s) aoEscolher(s);
-      }}
-      className="campo w-auto max-w-xs"
-    >
-      <option value="">{rotulo}</option>
-      {categorias.map((c) => (
-        <optgroup key={c} label={c}>
-          {servicos
-            .filter((s) => s.categoria === c)
-            .map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nome} — {formatarMoeda(s.precoBase)} {s.unidade}
-              </option>
-            ))}
-        </optgroup>
-      ))}
-      {extra && (
-        <optgroup label={extra.grupo}>
-          <option value="extra">{extra.rotulo}</option>
-        </optgroup>
-      )}
-    </select>
-  );
-}

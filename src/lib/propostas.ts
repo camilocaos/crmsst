@@ -23,6 +23,10 @@ export function numeroProposta(id: number, criadoEm: string) {
 
 export const NATUREZAS = ["Elaboração", "Renovação", "Atualização"] as const;
 
+/** Treinamentos: a maioria das vendas é reciclagem, por isso ela vem primeiro. */
+export const CATEGORIA_TREINAMENTOS = "Treinamentos";
+export const MODALIDADES_TREINAMENTO = ["Reciclagem", "Inicial"] as const;
+
 /** Categoria das avaliações quantitativas (medições ambientais). */
 export const CATEGORIA_MEDICOES = "Avaliações quantitativas";
 

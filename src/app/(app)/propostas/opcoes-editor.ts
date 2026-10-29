@@ -17,6 +17,7 @@ export function opcoesEditor() {
         nome: servicos.nome,
         categoria: servicos.categoria,
         precoBase: servicos.precoBase,
+        precoReciclagem: servicos.precoReciclagem,
         unidade: servicos.unidade,
         descricao: servicos.descricao,
         area: servicos.area,

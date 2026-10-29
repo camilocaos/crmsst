@@ -1,0 +1,1 @@
+ALTER TABLE `servicos` ADD `preco_reciclagem` real;

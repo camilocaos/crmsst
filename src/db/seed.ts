@@ -4,6 +4,7 @@ import * as schema from "./schema";
 import { conferirSenha } from "../lib/senha";
 import { aplicarTabelaClinica } from "./tabela-clinica";
 import { aplicarCatalogoSst } from "./catalogo-sst";
+import { aplicarTreinamentos } from "./catalogo-treinamentos";
 
 type Db = BetterSQLite3Database<typeof schema>;
 
@@ -19,6 +20,7 @@ export function seedSeVazio(db: Db) {
   db.insert(schema.configuracoes).values(CONFIG_PADRAO).onConflictDoNothing().run();
   aplicarCatalogoSst(db); // serviços de Segurança do Trabalho (uma vez por versão do catálogo)
   aplicarTabelaClinica(db); // exames da CUIDI Saúde Ocupacional (uma vez por versão da tabela)
+  aplicarTreinamentos(db); // 258 treinamentos, inicial e reciclagem (uma vez por versão)
   removerAcessoPadraoAntigo(db);
 }
 
