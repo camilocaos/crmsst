@@ -59,6 +59,16 @@ export default async function PropostaPage({ params }: PageProps<"/propostas/[id
         }
         acoes={
           <>
+            {proposta.status === "aceita" &&
+              (faltamContratos ? (
+                <form action={gerarContratos.bind(null, id)}>
+                  <button className={`${botao} bg-emerald-600 text-white hover:bg-emerald-700`}>Gerar contrato</button>
+                </form>
+              ) : contratosDaProposta[0] ? (
+                <Link href={`/contratos/${contratosDaProposta[0].id}`} className={`${botao} bg-emerald-600 text-white hover:bg-emerald-700`}>
+                  Ver contrato
+                </Link>
+              ) : null)}
             <a href={`/api/documentos/proposta/${id}`} className={`${botao} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
               Baixar Word
             </a>

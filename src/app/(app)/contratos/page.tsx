@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { contratos, empresas, propostas } from "@/db/schema";
-import { Cabecalho, Selo, Tabela, Td, Th, Vazio } from "@/components/ui";
+import { BotaoLink, Cabecalho, Selo, Tabela, Td, Th, Vazio } from "@/components/ui";
 import { AREAS, STATUS_CONTRATO } from "@/lib/constantes";
 import { formatarData } from "@/lib/formato";
 import { numeroProposta } from "@/lib/propostas";
@@ -33,9 +33,7 @@ export default async function ContratosPage() {
 
   return (
     <>
-      <Cabecalho
-        titulo="Contratos"
-      />
+      <Cabecalho titulo="Contratos" acoes={<BotaoLink href="/contratos/novo">+ Novo contrato</BotaoLink>} />
       {lista.length === 0 ? (
         <Vazio>Nenhum contrato ainda.</Vazio>
       ) : (

@@ -47,6 +47,14 @@ export async function gerarContratos(propostaId: number) {
   if (primeiro) redirect(`/contratos/${primeiro}`);
 }
 
+/** Botão "Gerar contrato" / "Abrir contrato": só para proposta aceita. Abre o contrato. */
+export async function contratoDaProposta(propostaId: number) {
+  await exigirUsuario();
+  const p = db.select({ status: propostas.status }).from(propostas).where(eq(propostas.id, propostaId)).get();
+  if (p?.status === "aceita") await gerarContratos(propostaId); // redireciona para o contrato
+  redirect(`/propostas/${propostaId}`); // não aceita ou sem itens: volta para a proposta
+}
+
 const contratoSchema = z.object({
   tipo: z.enum(["pontual", "mensalista"]).default("pontual"),
   formalizacaoPosterior: checkbox,

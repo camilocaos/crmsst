@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { contatos, empresas, notas, oportunidades, propostas, tarefas } from "@/db/schema";
+import { contatos, contratos, empresas, notas, oportunidades, propostas, tarefas } from "@/db/schema";
 import { numeroProposta } from "@/lib/propostas";
 import { buscarTarefas, pendentes } from "../../tarefas/consultas";
 import { ListaTarefas } from "../../tarefas/lista-tarefas";
 import { NovaTarefa } from "../../tarefas/nova-tarefa";
 import { BotaoLink, Cabecalho, Cartao, Selo, TituloCartao } from "@/components/ui";
 import { BotaoConfirmar, Formulario } from "@/components/formulario";
+import { contratoDaProposta } from "../../contratos/actions";
 import { STATUS_EMPRESA, STATUS_PROPOSTA, nomeEtapa } from "@/lib/constantes";
 import { formatarCnpj, formatarData, formatarDataHora, formatarMoeda, linkWhatsapp } from "@/lib/formato";
 import {
@@ -54,6 +55,12 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
     .where(eq(propostas.empresaId, id))
     .orderBy(desc(propostas.id))
     .all();
+  const idsPropostas = listaPropostas.map((p) => p.id);
+  const comContrato = new Set(
+    idsPropostas.length
+      ? db.selectDistinct({ id: contratos.propostaId }).from(contratos).where(inArray(contratos.propostaId, idsPropostas)).all().map((c) => c.id)
+      : [],
+  );
   const status = STATUS_EMPRESA[empresa.status];
   const zap = linkWhatsapp(empresa.telefone);
 
@@ -177,7 +184,16 @@ export default async function EmpresaPage({ params }: PageProps<"/empresas/[id]"
                       </Link>
                       <Selo classe={STATUS_PROPOSTA[p.status].classe}>{STATUS_PROPOSTA[p.status].nome}</Selo>
                     </div>
-                    <span className="text-xs text-slate-500">{formatarData(p.criadoEm)}</span>
+                    <div className="flex items-center gap-3">
+                      {p.status === "aceita" && (
+                        <form action={contratoDaProposta.bind(null, p.id)}>
+                          <button className="text-xs font-semibold text-emerald-700 hover:underline">
+                            {comContrato.has(p.id) ? "Ver contrato" : "Gerar contrato"}
+                          </button>
+                        </form>
+                      )}
+                      <span className="text-xs text-slate-500">{formatarData(p.criadoEm)}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
