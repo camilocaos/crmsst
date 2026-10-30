@@ -1,2 +1,5 @@
-- Contratos: botão "Novo contrato" e "Gerar contrato" na proposta aceita e na empresa
-- Contratos: forma de pagamento com Pix, boleto à vista ou boleto parcelado
+- Visual novo: cores por área, menu em grupos e botão "+ Novo"
+- 258 treinamentos no catálogo, com preço inicial e de reciclagem
+- Na proposta, treinamento escolhe Reciclagem ou Inicial e o preço troca sozinho
+- Busca no catálogo: digite parte do nome (ex.: "empilhadeira")
+- Serviços: busca, abas por categoria e filtro "Sem preço"
