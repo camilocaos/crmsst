@@ -106,7 +106,7 @@ export function Kanban({ cartoes }: { cartoes: CartaoKanban[] }) {
               }}
               onDragLeave={() => setAlvo((a) => (a === etapa.id ? null : a))}
               onDrop={() => soltar(etapa.id)}
-              className={`flex w-64 flex-col rounded-xl border p-3 transition ${
+              className={`flex w-64 flex-col rounded-xl border border-t-4 ${etapa.borda} p-3 transition ${
                 alvo === etapa.id ? "border-marca-500 bg-marca-50" : "border-slate-200 bg-slate-100/70"
               }`}
             >

@@ -1,11 +1,11 @@
 export const ETAPAS = [
-  { id: "prospeccao", nome: "Prospecção", probabilidade: 10, cor: "bg-slate-400" },
-  { id: "qualificacao", nome: "Qualificação", probabilidade: 25, cor: "bg-sky-500" },
-  { id: "visita_tecnica", nome: "Visita técnica", probabilidade: 40, cor: "bg-indigo-500" },
-  { id: "proposta", nome: "Proposta enviada", probabilidade: 60, cor: "bg-violet-500" },
-  { id: "negociacao", nome: "Negociação", probabilidade: 80, cor: "bg-amber-500" },
-  { id: "ganho", nome: "Ganho", probabilidade: 100, cor: "bg-emerald-500" },
-  { id: "perdido", nome: "Perdido", probabilidade: 0, cor: "bg-rose-500" },
+  { id: "prospeccao", nome: "Prospecção", probabilidade: 10, cor: "bg-slate-400", borda: "border-t-slate-400" },
+  { id: "qualificacao", nome: "Qualificação", probabilidade: 25, cor: "bg-sky-500", borda: "border-t-sky-500" },
+  { id: "visita_tecnica", nome: "Visita técnica", probabilidade: 40, cor: "bg-indigo-500", borda: "border-t-indigo-500" },
+  { id: "proposta", nome: "Proposta enviada", probabilidade: 60, cor: "bg-violet-500", borda: "border-t-violet-500" },
+  { id: "negociacao", nome: "Negociação", probabilidade: 80, cor: "bg-amber-500", borda: "border-t-amber-500" },
+  { id: "ganho", nome: "Ganho", probabilidade: 100, cor: "bg-emerald-500", borda: "border-t-emerald-500" },
+  { id: "perdido", nome: "Perdido", probabilidade: 0, cor: "bg-rose-500", borda: "border-t-rose-500" },
 ] as const;
 
 export type EtapaId = (typeof ETAPAS)[number]["id"];

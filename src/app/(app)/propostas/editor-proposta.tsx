@@ -197,8 +197,13 @@ export function EditorProposta({
           <ul className="space-y-3">
             {daSeguranca.map((i) => (
               <li key={i.chave} className="rounded-lg border border-slate-200 p-3">
-                <div className="grid gap-2 md:grid-cols-[1fr_9rem_5rem_8rem_7rem_2rem] md:items-center">
+                <div className="flex items-center gap-2">
                   <input value={i.descricao} onChange={(e) => alterar(i.chave, { descricao: e.target.value })} placeholder="Serviço" className="campo font-semibold" />
+                  <button type="button" onClick={() => remover(i.chave)} className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Remover">
+                    ✕
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-[10rem_5rem_8rem_1fr] md:items-center">
                   <select value={i.natureza ?? ""} onChange={(e) => mudarNatureza(i, e.target.value || null)} className="campo" title="Natureza">
                     <option value="">Natureza —</option>
                     {(servicoDe(i)?.categoria === CATEGORIA_TREINAMENTOS ? MODALIDADES_TREINAMENTO : NATUREZAS).map((n) => (
@@ -210,9 +215,6 @@ export function EditorProposta({
                   <span className={`text-right text-sm font-semibold tabular-nums ${i.incluso || i.opcional ? "text-slate-400" : ""}`}>
                     {i.incluso ? "Incluso" : i.opcional ? "Opcional" : formatarMoeda(i.quantidade * i.valorUnitario)}
                   </span>
-                  <button type="button" onClick={() => remover(i.chave)} className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Remover">
-                    ✕
-                  </button>
                 </div>
                 <div className="mt-2 grid gap-2 md:grid-cols-[1fr_16rem]">
                   <textarea

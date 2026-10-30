@@ -26,7 +26,14 @@ export default async function ServicosPage({ searchParams }: PageProps<"/servico
   await connection();
   const { q, cat } = await searchParams;
   const busca = typeof q === "string" ? q.trim() : "";
-  const todos = db.select().from(servicos).orderBy(asc(servicos.categoria), asc(servicos.nome)).all();
+  // NR-01, NR-05... antes dos demais (complementares, certificados), em ordem numérica
+  const ordem = (n: string) => (n.startsWith("NR-") ? `0${n}` : `1${n}`);
+  const todos = db
+    .select()
+    .from(servicos)
+    .orderBy(asc(servicos.categoria))
+    .all()
+    .sort((a, b) => a.categoria.localeCompare(b.categoria) || ordem(a.nome).localeCompare(ordem(b.nome), "pt-BR", { numeric: true }));
   const categorias = [...new Set(todos.map((s) => s.categoria))];
   const SEM_PRECO = "sem-preco";
   // Sem busca, mostra uma categoria por vez (são centenas de serviços)

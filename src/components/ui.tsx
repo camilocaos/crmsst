@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { SeloModulo } from "./selo-modulo";
 
 export function Cabecalho({
   titulo,
@@ -12,9 +13,12 @@ export function Cabecalho({
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3 pl-10 lg:pl-0">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-marca-900">{titulo}</h1>
-        {subtitulo && <p className="mt-1 text-sm text-slate-500">{subtitulo}</p>}
+      <div className="flex min-w-0 items-center gap-3">
+        <SeloModulo />
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-marca-900">{titulo}</h1>
+          {subtitulo && <div className="mt-0.5 text-sm text-slate-500">{subtitulo}</div>}
+        </div>
       </div>
       {acoes && <div className="flex flex-wrap gap-2">{acoes}</div>}
     </div>

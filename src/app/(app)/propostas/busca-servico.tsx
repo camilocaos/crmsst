@@ -112,7 +112,7 @@ export function BuscaServico<T extends OpcaoBusca>({
           {visiveis.map((s, k) => {
             const pos = k + (mostrarExtra ? 1 : 0);
             const cabecalho = s.categoria !== visiveis[k - 1]?.categoria ? s.categoria : null;
-            const preco = s.precoBase || s.precoReciclagem;
+            const preco = s.precoReciclagem ?? s.precoBase;
             return (
               <li key={s.id} role="option" aria-selected={ativo === pos}>
                 {cabecalho && <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{cabecalho}</p>}
@@ -126,7 +126,7 @@ export function BuscaServico<T extends OpcaoBusca>({
                   className={`flex w-full items-baseline justify-between gap-3 px-3 py-1.5 text-left text-sm ${ativo === pos ? "bg-marca-50" : ""}`}
                 >
                   <span className="text-slate-800">{s.nome}</span>
-                  <span className="shrink-0 text-xs tabular-nums text-slate-500">{preco ? `${formatarMoeda(preco)} ${s.unidade}` : "a definir"}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-slate-500">{preco ? `${s.precoReciclagem != null ? "recicl. " : ""}${formatarMoeda(preco)} ${s.unidade}` : "a definir"}</span>
                 </button>
               </li>
             );

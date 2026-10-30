@@ -117,13 +117,13 @@ export default async function DashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Cartao>
-          <p className="text-xs font-medium text-slate-500">Vendido no mês</p>
+        <Cartao className="border-t-4 border-t-emerald-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Vendido no mês</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{formatarMoeda(vendidoMes)}</p>
           {meta > 0 ? (
             <>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" title={`${pctMeta}% da meta`}>
-                <div className="h-full rounded-full bg-marca-500" style={{ width: `${pctMeta}%` }} />
+                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pctMeta}%` }} />
               </div>
               <p className="mt-1.5 text-xs text-slate-500">
                 {pctMeta}% da meta de {formatarMoeda(meta)}
@@ -133,20 +133,20 @@ export default async function DashboardPage() {
             <Link href="/configuracoes" className="mt-2 block text-xs text-marca-700 hover:underline">Definir meta mensal</Link>
           )}
         </Cartao>
-        <Cartao>
-          <p className="text-xs font-medium text-slate-500">Em negociação</p>
+        <Cartao className="border-t-4 border-t-violet-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-violet-700">Em negociação</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{formatarMoeda(totalFunil)}</p>
           <p className="mt-1.5 text-xs text-slate-500">{funil.reduce((s, e) => s + e.n, 0)} oportunidades abertas</p>
         </Cartao>
-        <Cartao>
-          <p className="text-xs font-medium text-slate-500">Taxa de conversão no mês</p>
+        <Cartao className="border-t-4 border-t-sky-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">Taxa de conversão no mês</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{taxaConversao === null ? "—" : `${taxaConversao}%`}</p>
           <p className="mt-1.5 text-xs text-slate-500">
             {ganhasMes} ganhas · {perdidasMes} perdidas
           </p>
         </Cartao>
-        <Cartao>
-          <p className="text-xs font-medium text-slate-500">Novas empresas no mês</p>
+        <Cartao className="border-t-4 border-t-cyan-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">Novas empresas no mês</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{leadsMes}</p>
           <p className="mt-1.5 text-xs text-slate-500">
             {aguardando.length} propostas aguardando resposta
